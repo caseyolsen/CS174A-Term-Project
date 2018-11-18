@@ -81,10 +81,10 @@ class Vending_Machine extends Scene_Component
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
       }
     make_control_panel(){
-      this.key_triggered_button("Shake Left", [","], () => {
+      this.key_triggered_button("Shake Left", ["["], () => {
 
       });
-      this.key_triggered_button("Shake Right", ["."], () => {
+      this.key_triggered_button("Shake Right", ["]"], () => {
 
       })
     }
@@ -93,13 +93,20 @@ class Vending_Machine extends Scene_Component
       let model_transform = Mat4.identity();
       let vm_transform = Mat4.identity();
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.black); //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
-      //insert vending machine legs
+      //insert vending machine legs, door, keypad, screen
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.2))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.2))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white);
+      for (let i = 0; i < 3; i++){ //12 buttons on machine
+        for (let j = 0; j < 4; j++){
+          this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.725 + i*.375,3.25 - j*.375,3.2))).times(Mat4.scale(Vec.of(.125,.125,.125))), this.materials.white); //add texture mapping for buttons
+        }
+      }
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,2.5,-4))).times(Mat4.scale(Vec.of(15,10,1))), this.materials.white); //use automations? back wall
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,-7.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //floor
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,12.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //ceiling
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(15,2.5,6))).times(Mat4.scale(Vec.of(1,10,10))).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0))), this.materials.white); //right wall
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-15,2.5,6))).times(Mat4.scale(Vec.of(1,10,10))).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0))), this.materials.white); //left wall
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,10,6))).times(Mat4.scale(Vec.of(.5,.5,.5))), this.materials.white.override({ambient:1})); //light "bulb"
-      this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.25,6))).times(Mat4.scale(Vec.of(.1,1.25,.1))), this.materials.black); //"string" that light hangs from
+      this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
     }
   }
