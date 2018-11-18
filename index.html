@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <script>
+      window.tiny_graphics = {};
+      window.classes = {};
+    </script>
+    <script src="tiny-graphics.js" ></script>
+    <script src= "dependencies.js" ></script>
+    <script src=   "main-scene.js" ></script>
+    <style>
+      body{
+        background: black;
+      }
+      canvas{
+        width: 1080px;
+        height: 600px;
+      }
+      .canvas-widget{
+        width: 1080px;
+        background: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="main-canvas" class="canvas-widget"></div>
+    <script> "use strict"
+      const scenes = ["Vending_Machine"];
+      new Canvas_Widget("main-canvas", scenes);
+    </script>
+  </body>
+</html>
