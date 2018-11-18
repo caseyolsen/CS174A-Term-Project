@@ -64,26 +64,42 @@ class Vending_Machine extends Scene_Component
           context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
 
         const r = context.width/context.height;
-        context.globals.graphics_state.    camera_transform = Mat4.translation([ 5,-3,-30 ]);  // Locate the camera here (inverted matrix).
+        context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
         const shapes = { 'box': new Cube(),               // At the beginning of our program, load one of each of these shape
-                       'strip': new Cube_Single_Strip(),  // definitions onto the GPU.  NOTE:  Only do this ONCE per shape
-                     'outline': new Cube_Outline() }      // design.  Once you've told the GPU what the design of a cube is,
+                       'square': new Square(),  // definitions onto the GPU.  NOTE:  Only do this ONCE per shape
+                     'tetrahedron': new Tetrahedron() }      // design.  Once you've told the GPU what the design of a cube is,
         this.submit_shapes( context, shapes );            // it would be redundant to tell it again.  You should just re-use
                                                           // the one called "box" more than once in display() to draw
                                                           // multiple cubes.  Don't define more than one blueprint for the
                                                           // same thing here.
         this.materials = {
-          clay: context.get_instance( Phong_Shader ).material( Color.of( 1,1,1, 1 ), { ambient: .6, diffusivity: .4 } ),
-          white: context.get_instance( Basic_Shader ).material()
+          black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
+          white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } )
         }
-        this.lights = [ new Light( Vec.of(0,10,10,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
+        this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
       }
-    make_control_panel(){}
+    make_control_panel(){
+      this.key_triggered_button("Shake Left", [","], () => {
+
+      });
+      this.key_triggered_button("Shake Right", ["."], () => {
+
+      })
+    }
     display( graphics_state ){
       graphics_state.lights = this.lights;
       let model_transform = Mat4.identity();
-      this.shapes.box.draw(graphics_state, model_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.clay);
+      let vm_transform = Mat4.identity();
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.black); //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
+      //insert vending machine legs
+      this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,2.5,-4))).times(Mat4.scale(Vec.of(15,10,1))), this.materials.white); //use automations? back wall
+      this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,-7.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //floor
+      this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,12.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //ceiling
+      this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(15,2.5,6))).times(Mat4.scale(Vec.of(1,10,10))).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0))), this.materials.white); //right wall
+      this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-15,2.5,6))).times(Mat4.scale(Vec.of(1,10,10))).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0))), this.materials.white); //left wall
+      this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,10,6))).times(Mat4.scale(Vec.of(.5,.5,.5))), this.materials.white.override({ambient:1})); //light "bulb"
+      this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.25,6))).times(Mat4.scale(Vec.of(.1,1.25,.1))), this.materials.black); //"string" that light hangs from
     }
   }
