@@ -67,40 +67,55 @@ class Vending_Machine extends Scene_Component
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
-        const shapes = { 'box': new Cube(),               // At the beginning of our program, load one of each of these shape
-                       'square': new Square(),  // definitions onto the GPU.  NOTE:  Only do this ONCE per shape
-                     'tetrahedron': new Tetrahedron() }      // design.  Once you've told the GPU what the design of a cube is,
-        this.submit_shapes( context, shapes );            // it would be redundant to tell it again.  You should just re-use
-                                                          // the one called "box" more than once in display() to draw
-                                                          // multiple cubes.  Don't define more than one blueprint for the
-                                                          // same thing here.
+        const shapes = { 'box': new Cube(),
+                       'square': new Square()}
+        this.submit_shapes( context, shapes );
         this.materials = {
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } )
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
+        this.timer;
+        this.queue = [];
+        this.curr = 0;
       }
     make_control_panel(){
-      this.key_triggered_button("Shake Left", ["["], () => {
-
+      this.key_triggered_button("Shake Left", ["["], () => { //we can come up with better buttons later
+        this.queue.unshift(1);
       });
       this.key_triggered_button("Shake Right", ["]"], () => {
-
-      })
+        this.queue.unshift(-1);
+      });
     }
     display( graphics_state ){
       graphics_state.lights = this.lights;
       let model_transform = Mat4.identity();
       let vm_transform = Mat4.identity();
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.black); //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
-      //insert vending machine legs, door, keypad, screen
-      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.2))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
-      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.2))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white);
-      for (let i = 0; i < 3; i++){ //12 buttons on machine
-        for (let j = 0; j < 4; j++){
-          this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.725 + i*.375,3.25 - j*.375,3.2))).times(Mat4.scale(Vec.of(.125,.125,.125))), this.materials.white); //add texture mapping for buttons
+      if (this.curr === 0){
+        if (this.queue.length){
+          this.curr = this.queue.pop();
+          this.timer = 0;
         }
       }
+      if (this.curr !== 0){
+        if (this.timer === 20){
+          this.curr = 0;
+        }
+        else{
+          vm_transform = Mat4.identity().times(Mat4.rotation(this.curr * Math.sin(Math.PI * this.timer/20)/4, Vec.of(0,0,1)));
+          this.timer++;
+        }
+      }
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.black); //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.2))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
+      //if window isn't able to delete part of the vending machine box, we may have to reconstruct the vending machine out of multiple squares instead of a cube
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.2))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
+      for (let i = 0; i < 3; i++){ //12 buttons on machine
+        for (let j = 0; j < 4; j++){
+          this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.725 + i*.375,3.25 - j*.375,3.2))).times(Mat4.scale(Vec.of(.125,.125,.125))), this.materials.white); //add texture mapping for buttons?
+        }
+      }
+      //I don't know how to implement the food door thingy
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,2.5,-4))).times(Mat4.scale(Vec.of(15,10,1))), this.materials.white); //use automations? back wall
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,-7.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //floor
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,12.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //ceiling
