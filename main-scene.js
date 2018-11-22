@@ -102,14 +102,14 @@ class Vending_Machine extends Scene_Component
           this.curr = 0;
         }
         else{
-          vm_transform = Mat4.identity().times(Mat4.rotation(this.curr * Math.sin(Math.PI * this.timer/20)/4, Vec.of(0,0,1)));
+          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.curr, -7.2, 0))).times(Mat4.rotation(this.curr * Math.sin(Math.PI * this.timer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.curr, 7.2, 0)));
           this.timer++;
         }
       }
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.black); //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
-      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.2))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //if window isn't able to delete part of the vending machine box, we may have to reconstruct the vending machine out of multiple squares instead of a cube
-      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.2))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
       for (let i = 0; i < 3; i++){ //12 buttons on machine
         for (let j = 0; j < 4; j++){
           this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.725 + i*.375,3.25 - j*.375,3.2))).times(Mat4.scale(Vec.of(.125,.125,.125))), this.materials.white); //add texture mapping for buttons?
