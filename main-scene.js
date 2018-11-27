@@ -77,6 +77,7 @@ class Vending_Machine extends Scene_Component
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
         this.liftFlap = false;
+        this.flapAngle = 0;
         this.shakeTimer;
         this.shake = [];
         this.currentShake = 0;
@@ -107,9 +108,9 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Right", ["]"], () => {
         this.shake.unshift(-1);
       });
-      this.key_triggered_button("Lift Flap", ["l"], () => {
-        this.liftFlap = !this.liftFlap;
-      });
+      //this.key_triggered_button("Lift Flap", ["l"], () => {
+      //  this.liftFlap = !this.liftFlap;
+      //});
       //when a user presses these buttons, it corresponds with pressing a button on the vending machine
       //the button could light up and/or depress
       //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
@@ -146,6 +147,7 @@ class Vending_Machine extends Scene_Component
     }
 
     display( graphics_state ){
+      const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
       graphics_state.lights = this.lights;
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
@@ -216,14 +218,21 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.1, 0,2.5))).times(Mat4.scale(Vec.of(thiccness, 6.9, 3))), this.materials.vending_machine);
 
       // FLAP
-      if (!this.liftFlap)
-      {
-        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(3, 0.8, thiccness))), this.materials.white);
-      }
-      else
-      {
-        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(3, 0.8, thiccness))), this.materials.white);
-      }
+      //if (!this.liftFlap)
+      //{
+      //  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(2.8, 0.8, 0.02))), this.materials.white);
+      //}
+      //else
+      //{
+        //this.flapAngle = -0.5/2*Math.PI + 0.5/2*Math.PI*Math.sin((2*Math.PI)*3*dt);
+        //.times(Mat4.translation(Vec.of(0,0,2)))
+      //  if (this.flapAngle < 50)
+      //  {
+      //    this.flapAngle += 2;
+      //  }
+      //  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.rotation(dt, Vec.of(1,0,0))).times(Mat4.scale(Vec.of(2.8, 0.8, 0.02))), this.materials.white);
+      //}
+      
       // SHELVES
       // shelf 1
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,5,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
