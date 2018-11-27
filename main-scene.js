@@ -68,6 +68,8 @@ class Vending_Machine extends Scene_Component
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
         const shapes = { 'box': new Cube(),
+                         'rounded_cylinder': new Rounded_Capped_Cylinder(100,50),
+                         'cylinder': new Capped_Cylinder(2,12),
                        'square': new Square()}
         this.submit_shapes( context, shapes );
         this.materials = {
@@ -80,9 +82,10 @@ class Vending_Machine extends Scene_Component
           fruitloops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/fruitloops.jpg", true ) } ),
           frostedflakes: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frostedflakes.jpg", true ) } ),
           lucky: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/lucky.jpg", true ) } ),
-          cocoapuffs: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/trix.jpg", true ) } ),
-          trix: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cocoapuffs.jpg", true ) } ),
-          rice: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/rice.jpg", true ) } )
+          cocoapuffs: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cocoapuffs.jpg", true ) } ),
+          trix: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/trix.jpg", true ) } ),
+          rice: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/rice.jpg", true ) } ),
+          cinnamon: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cinnamon.jpg", true ) } )
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
         this.liftFlap = false;
@@ -274,14 +277,14 @@ class Vending_Machine extends Scene_Component
       //first layer
       //row 1
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
        //row 2
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cinnamon);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.lucky);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pops);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cocoapuffs);
 
               //row 3
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
@@ -303,14 +306,14 @@ class Vending_Machine extends Scene_Component
       //second layer
       //row 1
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
        //row 2
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cinnamon);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.lucky);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pops);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cocoapuffs);
 
               //row 3
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
@@ -332,14 +335,14 @@ class Vending_Machine extends Scene_Component
       //third layer
             //row 1
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
        //row 2
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cinnamon);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.lucky);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pops);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cocoapuffs);
 
               //row 3
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
@@ -358,5 +361,6 @@ class Vending_Machine extends Scene_Component
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
 
+this.shapes.rounded_cylinder.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(15,0,0))).times(Mat4.rotation(Math.PI*0.5, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(-5,0,0))).times(Mat4.scale(Vec.of(0.2,1,1))), this.materials.black);
     }
   }
