@@ -73,7 +73,16 @@ class Vending_Machine extends Scene_Component
         this.materials = {
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
-          vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } )
+          vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
+          cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
+          frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
+          pops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pops.jpg", true ) } ),
+          fruitloops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/fruitloops.jpg", true ) } ),
+          frostedflakes: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frostedflakes.jpg", true ) } ),
+          lucky: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/lucky.jpg", true ) } ),
+          cocoapuffs: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/trix.jpg", true ) } ),
+          trix: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cocoapuffs.jpg", true ) } ),
+          rice: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/rice.jpg", true ) } )
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
         this.liftFlap = false;
@@ -85,16 +94,16 @@ class Vending_Machine extends Scene_Component
         this.press = [];
         this.currentPress = -1;
         this.buttonTransformations = [
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
-          Mat4.translation(Vec.of(2.725,          3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
-          Mat4.translation(Vec.of(2.725 + .375,   3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
-          Mat4.translation(Vec.of(2.725,          3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //6
-          Mat4.translation(Vec.of(2.725,          3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //7
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //8
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //9
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.8125,        3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
+          Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
+          Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
+          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //D
+          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //E
         ];
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
@@ -129,19 +138,19 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("4", ["4"], ()=>{
         this.press.unshift(4);
       });
-      this.key_triggered_button("5", ["5"], ()=>{
+      this.key_triggered_button("A", ["5"], ()=>{
         this.press.unshift(5);
       });
-      this.key_triggered_button("6", ["6"], ()=>{
+      this.key_triggered_button("B", ["6"], ()=>{
         this.press.unshift(6);
       });
-      this.key_triggered_button("7", ["7"], ()=>{
+      this.key_triggered_button("C", ["7"], ()=>{
         this.press.unshift(7);
       });
-      this.key_triggered_button("8", ["8"], ()=>{
+      this.key_triggered_button("D", ["8"], ()=>{
         this.press.unshift(8);
       });
-      this.key_triggered_button("9", ["9"], ()=>{
+      this.key_triggered_button("E", ["9"], ()=>{
         this.press.unshift(9);
       });
     }
@@ -268,5 +277,95 @@ class Vending_Machine extends Scene_Component
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-15,2.5,6))).times(Mat4.scale(Vec.of(1,10,10))).times(Mat4.rotation(Math.PI/2, Vec.of(0,1,0))), this.materials.white); //left wall
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,10,6))).times(Mat4.scale(Vec.of(.5,.5,.5))), this.materials.white.override({ambient:1})); //light "bulb"
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
+
+
+      //creating VISIBLE cereal boxes 
+      //first layer
+      //row 1
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       //row 2
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+              //row 3
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+              //row 4
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70,0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+              //row 5
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+      //second layer
+      //row 1
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       //row 2
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+              //row 3
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+              //row 4
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70,0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+              //row 5
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+      //third layer
+            //row 1
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+       //row 2
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+              //row 3
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+              //row 4
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70,0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
+              //row 5
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
+
     }
   }
