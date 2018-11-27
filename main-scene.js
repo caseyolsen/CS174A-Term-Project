@@ -76,8 +76,15 @@ class Vending_Machine extends Scene_Component
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
-          cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pooh.png", false ) } ),
-          pooh: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pooh.png", true ) } )
+          cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
+          frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
+          pops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pops.jpg", true ) } ),
+          fruitloops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/fruitloops.jpg", true ) } ),
+          frostedflakes: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frostedflakes.jpg", true ) } ),
+          lucky: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/lucky.jpg", true ) } ),
+          cocoapuffs: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/trix.jpg", true ) } ),
+          trix: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cocoapuffs.jpg", true ) } ),
+          rice: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/rice.jpg", true ) } )
         }
                this.lights = [ new Light( Vec.of( -5,5,5,1 ), Color.of( 0,1,1,1 ), 100000 ) ];
 
@@ -186,10 +193,29 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
 
-      //creating cereal boxes
-//       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(10, 2, 0)).times(Mat4.scale(Vec.of(1,1,1)))), this.materials.pooh);
+      //creating cereal boxes 
+      //row 1
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.60, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.2, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.trix);
+       //row 2
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3, 3, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.60, 3, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 3, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.2, 3, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.trix);
 
-//       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(10, 0, 2)).times(Mat4.scale(Vec.of(0.5,1,1)))), this.materials.cheerios);
-      
+              //row 3
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3, 1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.60, 1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.2, 1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.trix);
+
+              //row 4
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3, -1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.cheerios);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.60, -1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.rice);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.frosted);
+       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.2, -1, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.trix);
+
     }
   }
