@@ -72,7 +72,8 @@ class Vending_Machine extends Scene_Component
         this.submit_shapes( context, shapes );
         this.materials = {
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
-          white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } )
+          white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
+          vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } )
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
         this.shakeTimer;
@@ -82,16 +83,16 @@ class Vending_Machine extends Scene_Component
         this.press = [];
         this.currentPress = -1;
         this.buttonTransformations = [
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 3*.375, 3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
-          Mat4.translation(Vec.of(2.725,          3.25,          3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
-          Mat4.translation(Vec.of(2.725 + .375,   3.25,          3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25,          3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
-          Mat4.translation(Vec.of(2.725,          3.25 - .375,   3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - .375,   3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - .375,   3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //6
-          Mat4.translation(Vec.of(2.725,          3.25 - 2*.375, 3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //7
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 2*.375, 3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //8
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - 2*.375, 3.2)).times(Mat4.scale(Vec.of(.125,.125,.125))), //9
+          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
+          Mat4.translation(Vec.of(2.725,          3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.725 + .375,   3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.725,          3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.725 + .375,   3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
+          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //6
+          Mat4.translation(Vec.of(2.725,          3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //7
+          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //8
+          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //9
         ];
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
@@ -184,13 +185,41 @@ class Vending_Machine extends Scene_Component
       }
 
       //drawing all the things
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(3.9, 7.2, 3.2))), this.materials.black); //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
-      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
+      //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
+      //Vending Machine is multiple boxes put together
+
+      let thiccness = 0.2;
+
+      //back:
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vending_machine);
+      //right side
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
+      // left side
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
+      // top
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
+      // bottom
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
+      //light in machine
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,6.5,2.5))).times(Mat4.scale(Vec.of(2, 0.1, 3))), this.materials.white.override({ambient:1}));
+      // front bottom bottom
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-6,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
+      // front bottom top
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-3,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
+      // front bottom right
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3,0,5.5))).times(Mat4.scale(Vec.of(1, 6.9, thiccness))), this.materials.vending_machine);
+      // flap
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(3, 0.8, thiccness))), this.materials.white);
+      // inside divider
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.1, 0,2.5))).times(Mat4.scale(Vec.of(thiccness, 6.9, 3))), this.materials.vending_machine);
+
+      //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
       this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
       for (let i = 0; i < 10; i++){
         this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.materials.white);
       }
+
       //door in progress
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,2.5,-4))).times(Mat4.scale(Vec.of(15,10,1))), this.materials.white); //use automations? back wall
       this.shapes.square.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,-7.5,6))).times(Mat4.scale(Vec.of(15,1,10))).times(Mat4.rotation(Math.PI/2, Vec.of(1,0,0))), this.materials.white); //floor
