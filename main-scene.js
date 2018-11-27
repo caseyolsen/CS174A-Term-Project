@@ -70,8 +70,6 @@ class Vending_Machine extends Scene_Component
         const shapes = { 'box': new Cube(),
                        'square': new Square()}
         this.submit_shapes( context, shapes );
-        this.use_mipMap = true;
-        
         this.materials = {
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
@@ -86,10 +84,6 @@ class Vending_Machine extends Scene_Component
           trix: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cocoapuffs.jpg", true ) } ),
           rice: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/rice.jpg", true ) } )
         }
-
-        this.timer;
-        this.queue = [];
-        this.curr = 0;
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
         this.liftFlap = false;
         this.shakeTimer;
@@ -275,7 +269,7 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,10,6))).times(Mat4.scale(Vec.of(.5,.5,.5))), this.materials.white.override({ambient:1})); //light "bulb"
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
-
+      
       //creating cereal boxes 
       //row 1
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.cheerios);
