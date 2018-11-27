@@ -71,7 +71,7 @@ class Vending_Machine extends Scene_Component
                        'square': new Square()}
         this.submit_shapes( context, shapes );
         this.use_mipMap = true;
-        
+
         this.materials = {
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
@@ -109,6 +109,12 @@ class Vending_Machine extends Scene_Component
           Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
           Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //D
           Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //E
+        ];
+        this.buttonTextures = [
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white0.png", true)}), //white0
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow0.png", true)}), //yellow0
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:  1, texture:context.get_instance("assets/boxes/rice.jpg", true)})
+
         ];
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
@@ -187,11 +193,13 @@ class Vending_Machine extends Scene_Component
         if (this.press.length){
           this.currentPress = this.press.pop();
           this.pressTimer = 0;
+          //switch materials
         }
       }
       if (this.currentPress !== -1){
         if (this.pressTimer === 20){
           this.currentPress = -1;
+          //revert materials
         }
         else if (this.pressTimer < 10){
           this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,-.1)));
@@ -276,7 +284,7 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
 
-      //creating cereal boxes 
+      //creating cereal boxes
       //row 1
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.cheerios);
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.60, 5, 5)).times(Mat4.scale(Vec.of(0.5,0.9,1)))), this.materials.rice);
