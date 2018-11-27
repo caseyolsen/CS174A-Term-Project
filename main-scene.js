@@ -110,8 +110,10 @@ class Vending_Machine extends Scene_Component
         this.queue = [];
         this.curr = 0;
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
-        this.liftFlap = false;
-        this.flapAngle = 0;
+        this.row = -1;
+        this.column = -1;
+        this.trackMatrixArray = [];
+        this.materialsMatrix = [];
         this.lrshakeTimer;
         this.lrshake = [];
         this.lrcurrentShake = 0;
@@ -175,45 +177,92 @@ class Vending_Machine extends Scene_Component
       });
       this.new_line();
 
-      //this.key_triggered_button("Lift Flap", ["l"], () => {
-      //  this.liftFlap = !this.liftFlap;
-      //});
       //when a user presses these buttons, it corresponds with pressing a button on the vending machine
       //the button could light up and/or depress
       //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
       this.key_triggered_button("1", ["1"], ()=>{
         this.press.unshift(1);
+        this.column = 0;
       });
       this.key_triggered_button("2", ["2"], ()=>{
         this.press.unshift(2);
+        this.column = 1;
       });
       this.key_triggered_button("3", ["3"], ()=>{
         this.press.unshift(3);
+        this.column = 2;
       });
       this.key_triggered_button("4", ["4"], ()=>{
         this.press.unshift(4);
+        this.column = 3;
       });
       this.key_triggered_button("5", ["5"], ()=>{
         this.press.unshift(5);
+        this.column = 4;
       });
       this.new_line();
 
       this.key_triggered_button("A", ["6"], ()=>{
         this.press.unshift(6);
+        this.row = 0;
       });
       this.key_triggered_button("B", ["7"], ()=>{
         this.press.unshift(7);
+        this.row = 1;
       });
       this.key_triggered_button("C", ["8"], ()=>{
         this.press.unshift(8);
+        this.row = 2;
       });
       this.key_triggered_button("D", ["9"], ()=>{
         this.press.unshift(9);
+        this.row = 3;
       });
       this.key_triggered_button("E", ["0"], ()=>{
         this.press.unshift(0);
+        this.row = 4;
       });
     }
+
+    vend_item(graphics_state, vm_transform, t, dt)
+    {
+
+      // GATES
+      for (let i = 0; i < 5; i++)
+      {
+        for (let j = 0; j < 4; j++)
+        {
+            if (this.column == -1 || this.row == -1)
+            {
+                  for (let k = 0; k < 3; k++)
+                  {
+                        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                        this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                  }     
+            }
+            else
+            {
+                  if (this.row == i && this.column == j)
+                  {
+                        for (let k = 0; k < 3; k++)
+                        {
+                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+t/5))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+t/5))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                        } 
+                  }
+                  else
+                  {
+                        for (let k = 0; k < 3; k++)
+                        {
+                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                        } 
+                  }
+            }
+        }
+      }
+    }
+
 
     display( graphics_state ){
       const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
@@ -329,17 +378,14 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-0.25,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-2,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
 
-      // GATES
-      for (let i = 0; i < 5; i++)
-      {
-        for (let j = 0; j < 4; j++)
-        {
-          for (let k = 0; k < 3; k++)
-          {
-            this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-          }
-        }
-      }
+      this.materialsMatrix = [[this.materials.cheerios, this.materials.frosted, this.materials.trix, this.materials.rice], 
+                              [this.materials.cinnamon, this.materials.lucky, this.materials.pops, this.materials.cocoapuffs], 
+                              [this.materials.crunch, this.materials.raisin, this.materials.cookie, this.materials.specialk], 
+                              [this.materials.pocky, this.materials.greentea, this.materials.strawberry, this.materials.banana], 
+                              [this.materials.wheat, this.materials.motts, this.materials.cheese, this.materials.pop]]
+
+
+      this.vend_item(graphics_state, vm_transform, t, dt);
 
       //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
@@ -359,7 +405,7 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
 
-
+/*
       //creating VISIBLE cereal boxes
       //first layer
       //row 1
@@ -450,6 +496,6 @@ class Vending_Machine extends Scene_Component
 
  //this.shapes.rounded_cylinder.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(15,0,0))).times(Mat4.rotation(Math.PI*0.5, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(-5,0,0))).times(Mat4.scale(Vec.of(0.2,1,1))), this.materials.black);
 
-
+*/
     }
   }
