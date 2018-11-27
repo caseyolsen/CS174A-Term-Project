@@ -115,6 +115,9 @@ class Vending_Machine extends Scene_Component
         this.column = -1;
         this.trackMatrixArray = [];
         this.materialsMatrix = [];
+        this.itemxPositionMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.itemyPositionMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
         this.lrshakeTimer;
         this.lrshake = [];
         this.lrcurrentShake = 0;
@@ -238,31 +241,50 @@ class Vending_Machine extends Scene_Component
             {
                   for (let k = 0; k < 3; k++)
                   {
-                        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                        this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                        this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
                   }
             }
             else
             {
+                  // this if statement is where it gets hard
+                  // its responsible for moving the lane and having the item fall
                   if (this.row == i && this.column == j)
                   {
+                        if (this.itemxPositionMatrix[i][j] < 14)
+                        {
+                              this.itemxPositionMatrix[i][j] += 1;
+                        }
+                        else
+                        {
+                              this.row = -1;
+                              this.column = -1;
+                        }
+
                         for (let k = 0; k < 3; k++)
                         {
-                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+t/5))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+t/5))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                              // moving the boxes and gates forward
+                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
                         }
                   }
                   else
                   {
                         for (let k = 0; k < 3; k++)
                         {
-                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
                         }
                   }
             }
+
         }
       }
+      //if (this.row != -1 && this.column != -1)
+      //{
+      //      this.row = -1;
+      //      this.column = -1;
+      //}
     }
 
 
