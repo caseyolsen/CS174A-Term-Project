@@ -113,7 +113,6 @@ class Vending_Machine extends Scene_Component
         this.buttonTextures = [
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white0.png", true)}), //white0
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow0.png", true)}), //yellow0
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:  1, texture:context.get_instance("assets/boxes/rice.jpg", true)})
 
         ];
         this.textures = [];//fill with texture maps
