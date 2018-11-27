@@ -76,6 +76,7 @@ class Vending_Machine extends Scene_Component
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } )
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
+        this.liftFlap = false;
         this.shakeTimer;
         this.shake = [];
         this.currentShake = 0;
@@ -105,6 +106,9 @@ class Vending_Machine extends Scene_Component
       });
       this.key_triggered_button("Shake Right", ["]"], () => {
         this.shake.unshift(-1);
+      });
+      this.key_triggered_button("Lift Flap", ["l"], () => {
+        this.liftFlap = !this.liftFlap;
       });
       //when a user presses these buttons, it corresponds with pressing a button on the vending machine
       //the button could light up and/or depress
@@ -201,19 +205,25 @@ class Vending_Machine extends Scene_Component
       // bottom
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
       //light in machine
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,6.5,2.5))).times(Mat4.scale(Vec.of(2, 0.1, 3))), this.materials.white.override({ambient:1}));
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,6.6,2.5))).times(Mat4.scale(Vec.of(2, 0.03, 3))), this.materials.white.override({ambient:1}));
       // front bottom bottom
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-6,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
       // front bottom top
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-3,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
-      // front bottom right
+      // front right
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3,0,5.5))).times(Mat4.scale(Vec.of(1, 6.9, thiccness))), this.materials.vending_machine);
-      // flap
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(3, 0.8, thiccness))), this.materials.white);
       // inside divider
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.1, 0,2.5))).times(Mat4.scale(Vec.of(thiccness, 6.9, 3))), this.materials.vending_machine);
 
-
+      // FLAP
+      if (!this.liftFlap)
+      {
+        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(3, 0.8, thiccness))), this.materials.white);
+      }
+      else
+      {
+        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.scale(Vec.of(3, 0.8, thiccness))), this.materials.white);
+      }
       // SHELVES
       // shelf 1
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,5,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
@@ -222,6 +232,17 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-0.25,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-2,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
 
+      // GATES
+      for (let i = 0; i < 5; i++)
+      {
+        for (let j = 0; j < 4; j++)
+        {
+          for (let k = 0; k < 3; k++)
+          {
+            this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+          }
+        }
+      }
 
       //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
