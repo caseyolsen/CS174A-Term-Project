@@ -135,6 +135,92 @@ class Subdivision_Sphere extends Shape  // This Shape defines a Sphere surface, 
 }
 
 
+window.Grid_Patch = window.classes.Grid_Patch =
+class Grid_Patch extends Shape              // A grid of rows and columns you can distort. A tesselation of triangles connects the
+{                                           // points, generated with a certain predictable pattern of indices.  Two callbacks
+                                            // allow you to dynamically define how to reach the next row or column.
+  constructor( rows, columns, next_row_function, next_column_function, texture_coord_range = [ [ 0, rows ], [ 0, columns ] ]  )
+    { super( "positions", "normals", "texture_coords" );
+      let points = [];
+      for( let r = 0; r <= rows; r++ )
+      { points.push( new Array( columns+1 ) );                                                    // Allocate a 2D array.
+                                             // Use next_row_function to generate the start point of each row. Pass in the progress ratio,
+        points[ r ][ 0 ] = next_row_function( r/rows, points[ r-1 ] && points[ r-1 ][ 0 ] );      // and the previous point if it existed.
+      }
+      for(   let r = 0; r <= rows;    r++ )               // From those, use next_column function to generate the remaining points:
+        for( let c = 0; c <= columns; c++ )
+        { if( c > 0 ) points[r][ c ] = next_column_function( c/columns, points[r][ c-1 ], r/rows );
+
+          this.positions.push( points[r][ c ] );
+                                                                                      // Interpolate texture coords from a provided range.
+          const a1 = c/columns, a2 = r/rows, x_range = texture_coord_range[0], y_range = texture_coord_range[1];
+          this.texture_coords.push( Vec.of( ( a1 )*x_range[1] + ( 1-a1 )*x_range[0], ( a2 )*y_range[1] + ( 1-a2 )*y_range[0] ) );
+        }
+      for(   let r = 0; r <= rows;    r++ )            // Generate normals by averaging the cross products of all defined neighbor pairs.
+        for( let c = 0; c <= columns; c++ )
+        { let curr = points[r][c], neighbors = new Array(4), normal = Vec.of( 0,0,0 );
+          for( let [ i, dir ] of [ [ -1,0 ], [ 0,1 ], [ 1,0 ], [ 0,-1 ] ].entries() )         // Store each neighbor by rotational order.
+            neighbors[i] = points[ r + dir[1] ] && points[ r + dir[1] ][ c + dir[0] ];        // Leave "undefined" in the array wherever
+                                                                                              // we hit a boundary.
+          for( let i = 0; i < 4; i++ )                                          // Take cross-products of pairs of neighbors, proceeding
+            if( neighbors[i] && neighbors[ (i+1)%4 ] )                          // a consistent rotational direction through the pairs:
+              normal = normal.plus( neighbors[i].minus( curr ).cross( neighbors[ (i+1)%4 ].minus( curr ) ) );
+          normal.normalize();                                                              // Normalize the sum to get the average vector.
+                                                     // Store the normal if it's valid (not NaN or zero length), otherwise use a default:
+          if( normal.every( x => x == x ) && normal.norm() > .01 )  this.normals.push( Vec.from( normal ) );
+          else                                                      this.normals.push( Vec.of( 0,0,1 )    );
+        }
+
+      for( var h = 0; h < rows; h++ )             // Generate a sequence like this (if #columns is 10):
+        for( var i = 0; i < 2 * columns; i++ )    // "1 11 0  11 1 12  2 12 1  12 2 13  3 13 2  13 3 14  4 14 3..."
+          for( var j = 0; j < 3; j++ )
+            this.indices.push( h * ( columns + 1 ) + columns * ( ( i + ( j % 2 ) ) % 2 ) + ( ~~( ( j % 3 ) / 2 ) ?
+                                   ( ~~( i / 2 ) + 2 * ( i % 2 ) )  :  ( ~~( i / 2 ) + 1 ) ) );
+    }
+  static sample_array( array, ratio )                 // Optional but sometimes useful as a next row or column operation. In a given array
+    {                                                 // of points, intepolate the pair of points that our progress ratio falls between.
+      const frac = ratio * ( array.length - 1 ), alpha = frac - Math.floor( frac );
+      return array[ Math.floor( frac ) ].mix( array[ Math.ceil( frac ) ], alpha );
+    }
+}
+
+
+window.Surface_Of_Revolution = window.classes.Surface_Of_Revolution =
+class Surface_Of_Revolution extends Grid_Patch      // SURFACE OF REVOLUTION: Produce a curved "sheet" of triangles with rows and columns.
+                                                    // Begin with an input array of points, defining a 1D path curving through 3D space --
+                                                    // now let each such point be a row.  Sweep that whole curve around the Z axis in equal
+                                                    // steps, stopping and storing new points along the way; let each step be a column. Now
+                                                    // we have a flexible "generalized cylinder" spanning an area until total_curvature_angle.
+{ constructor( rows, columns, points, texture_coord_range, total_curvature_angle = 2*Math.PI )
+    { const row_operation =     i => Grid_Patch.sample_array( points, i ),
+         column_operation = (j,p) => Mat4.rotation( total_curvature_angle/columns, Vec.of( 0,0,1 ) ).times(p.to4(1)).to3();
+
+       super( rows, columns, row_operation, column_operation, texture_coord_range );
+    }
+}
+
+
+window.Regular_2D_Polygon = window.classes.Regular_2D_Polygon =
+class Regular_2D_Polygon extends Surface_Of_Revolution  // Approximates a flat disk / circle
+  { constructor( rows, columns ) { super( rows, columns, Vec.cast( [0, 0, 0], [1, 0, 0] ) );
+                                   this.normals = this.normals.map( x => Vec.of( 0,0,1 ) );
+                                   this.texture_coords.forEach( (x, i, a) => a[i] = this.positions[i].map( x => x/2 + .5 ).slice(0,2) ); } }
+
+
+window.Cylindrical_Tube = window.classes.Cylindrical_Tube =
+class Cylindrical_Tube extends Surface_Of_Revolution    // An open tube shape with equally sized sections, pointing down Z locally.
+  { constructor( rows, columns, texture_range ) { super( rows, columns, Vec.cast( [1, 0, .5], [1, 0, -.5] ), texture_range ); } }
+
+
+window.Capped_Cylinder = window.classes.Capped_Cylinder =
+class Capped_Cylinder extends Shape                       // Combine a tube and two regular polygons to make a closed cylinder.
+  { constructor( rows, columns, texture_range )           // Flat shade this to make a prism, where #columns = #sides.
+      { super( "positions", "normals", "texture_coords" );
+        Cylindrical_Tube  .insert_transformed_copy_into( this, [ rows, columns, texture_range ] );
+        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ],                                                  Mat4.translation([ 0, 0, .5 ]) );
+        Regular_2D_Polygon.insert_transformed_copy_into( this, [ 1, columns ], Mat4.rotation( Math.PI, Vec.of(0, 1, 0) ).times( Mat4.translation([ 0, 0, .5 ]) ) ); } }
+
+
 window.Basic_Shader = window.classes.Basic_Shader =
 class Basic_Shader extends Shader             // Subclasses of Shader each store and manage a complete GPU program.  This Shader is
 {                                             // the simplest example of one.  It samples pixels from colors that are directly assigned

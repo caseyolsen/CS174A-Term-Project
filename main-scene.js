@@ -76,9 +76,24 @@ class Vending_Machine extends Scene_Component
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } )
         }
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
-        this.timer;
-        this.queue = [];
-        this.curr = 0;
+        this.shakeTimer;
+        this.shake = [];
+        this.currentShake = 0;
+        this.pressTimer;
+        this.press = [];
+        this.currentPress = -1;
+        this.buttonTransformations = [
+          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
+          Mat4.translation(Vec.of(2.725,          3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.725 + .375,   3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.725,          3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.725 + .375,   3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
+          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //6
+          Mat4.translation(Vec.of(2.725,          3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //7
+          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //8
+          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //9
+        ];
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
         //also need member variables to implement button pushing
@@ -86,26 +101,44 @@ class Vending_Machine extends Scene_Component
 
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
       this.key_triggered_button("Shake Left", ["["], () => { //we can come up with better buttons later
-        this.queue.unshift(1);
+        this.shake.unshift(1);
       });
       this.key_triggered_button("Shake Right", ["]"], () => {
-        this.queue.unshift(-1);
+        this.shake.unshift(-1);
       });
       //when a user presses these buttons, it corresponds with pressing a button on the vending machine
       //the button could light up and/or depress
       //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
-      //this.key_triggered_button("A", ["a"], ()=>{}); //interferes with existing key
-      this.key_triggered_button("B", ["b"], ()=>{});
-      this.key_triggered_button("C", ["c"], ()=>{});
-      //this.key_triggered_button("D", ["d"], ()=>{}); //interferes with existing key
-      this.key_triggered_button("1", ["1"], ()=>{});
-      this.key_triggered_button("2", ["2"], ()=>{});
-      this.key_triggered_button("3", ["3"], ()=>{});
-      this.key_triggered_button("4", ["4"], ()=>{});
-      this.key_triggered_button("5", ["5"], ()=>{});
-      this.key_triggered_button("6", ["6"], ()=>{});
-      this.key_triggered_button("7", ["7"], ()=>{});
-      this.key_triggered_button("8", ["8"], ()=>{});
+      this.key_triggered_button("0", ["0"], ()=>{
+        this.press.unshift(0);
+      });
+      this.key_triggered_button("1", ["1"], ()=>{
+        this.press.unshift(1);
+      });
+      this.key_triggered_button("2", ["2"], ()=>{
+        this.press.unshift(2);
+      });
+      this.key_triggered_button("3", ["3"], ()=>{
+        this.press.unshift(3);
+      });
+      this.key_triggered_button("4", ["4"], ()=>{
+        this.press.unshift(4);
+      });
+      this.key_triggered_button("5", ["5"], ()=>{
+        this.press.unshift(5);
+      });
+      this.key_triggered_button("6", ["6"], ()=>{
+        this.press.unshift(6);
+      });
+      this.key_triggered_button("7", ["7"], ()=>{
+        this.press.unshift(7);
+      });
+      this.key_triggered_button("8", ["8"], ()=>{
+        this.press.unshift(8);
+      });
+      this.key_triggered_button("9", ["9"], ()=>{
+        this.press.unshift(9);
+      });
     }
 
     display( graphics_state ){
@@ -113,24 +146,43 @@ class Vending_Machine extends Scene_Component
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
-      if (this.curr === 0){
-        if (this.queue.length){ //checks that we don't try to pop the empty queue
-          this.curr = this.queue.pop();
-          this.timer = 0; //resets timer
+      if (this.currentShake === 0){
+        if (this.shake.length){ //checks that we don't try to pop the empty queue
+          this.currentShake = this.shake.pop();
+          this.shakeTimer = 0; //resets timer
         }
       }
-      if (this.curr !== 0){
-        if (this.timer === 20){
-          this.curr = 0;
+      if (this.currentShake !== 0){
+        if (this.shakeTimer === 20){
+          this.currentShake = 0;
         }
-        else{
-          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.curr, -7.2, 0))).times(Mat4.rotation(this.curr * Math.sin(Math.PI * this.timer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.curr, 7.2, 0)));
-          this.timer++;
+        else {
+          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.currentShake, -7.2, 0))).times(Mat4.rotation(this.currentShake * Math.sin(Math.PI * this.shakeTimer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.currentShake, 7.2, 0)));
+          this.shakeTimer++;
         }
       }
 
       //for button pushing, we would use a switch for the queue. if we created an array of transformation matrices for the buttons
       //then a button press in the queue results on the same process as above on a matrix on the array
+      if (this.currentPress === -1){
+        if (this.press.length){
+          this.currentPress = this.press.pop();
+          this.pressTimer = 0;
+        }
+      }
+      if (this.currentPress !== -1){
+        if (this.pressTimer === 20){
+          this.currentPress = -1;
+        }
+        else if (this.pressTimer < 10){
+          this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,-.1)));
+          this.pressTimer++;
+        }
+        else {
+          this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,.1)));
+          this.pressTimer++;
+        }
+      }
 
       //drawing all the things
       //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
@@ -138,16 +190,16 @@ class Vending_Machine extends Scene_Component
 
       let thiccness = 0.2;
 
-      //back: 
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vending_machine); 
+      //back:
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vending_machine);
       //right side
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine); 
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
       // left side
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine); 
-      // top 
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
+      // top
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
       // bottom
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);  
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
       //light in machine
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,6.5,2.5))).times(Mat4.scale(Vec.of(2, 0.1, 3))), this.materials.white.override({ambient:1}));
       // front bottom bottom
@@ -173,11 +225,9 @@ class Vending_Machine extends Scene_Component
 
       //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
-      //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
-      for (let i = 0; i < 3; i++){ //12 buttons on machine: A-D on the first column, 1-8 on the next two, alternatively A-F on the first 2 rows, 0-5 on the next 2
-        for (let j = 0; j < 4; j++){//possibly create an array of 12 image files for each button's texture map
-          this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.725 + i*.375,3.25 - j*.375,5.8))).times(Mat4.scale(Vec.of(.125,.125,.125))), this.materials.white);//last parameter would reference array[4 * i + j]
-        }
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
+      for (let i = 0; i < 10; i++){
+        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.materials.white);
       }
 
       //door in progress
