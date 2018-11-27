@@ -77,6 +77,7 @@ class Vending_Machine extends Scene_Component
         this.materials = {
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
+          yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
@@ -157,7 +158,8 @@ class Vending_Machine extends Scene_Component
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteD.png", true)}), //whiteD
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD
         ];
-        this.textures = [];//fill with texture maps
+        this.pressed = [false, false, false, false, false, false, false, false, false, false];
+        //fill with texture maps
         //create array for each button's transformations
         //also need member variables to implement button pushing
       }
@@ -238,7 +240,7 @@ class Vending_Machine extends Scene_Component
                   {
                         this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                         this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
-                  }     
+                  }
             }
             else
             {
@@ -248,7 +250,7 @@ class Vending_Machine extends Scene_Component
                         {
                               this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+t/5))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                               this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+t/5))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
-                        } 
+                        }
                   }
                   else
                   {
@@ -256,7 +258,7 @@ class Vending_Machine extends Scene_Component
                         {
                               this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                               this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
-                        } 
+                        }
                   }
             }
         }
@@ -309,13 +311,13 @@ class Vending_Machine extends Scene_Component
         if (this.press.length){
           this.currentPress = this.press.pop();
           this.pressTimer = 0;
-          //switch materials
+          this.pressed[this.currentPress] = true;
         }
       }
       if (this.currentPress !== -1){
         if (this.pressTimer === 20){
+          this.pressed[this.currentPress] = false;
           this.currentPress = -1;
-          //revert materials
         }
         else if (this.pressTimer < 10){
           this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,-.1)));
@@ -378,10 +380,10 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-0.25,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-2,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
 
-      this.materialsMatrix = [[this.materials.cheerios, this.materials.frosted, this.materials.trix, this.materials.rice], 
-                              [this.materials.cinnamon, this.materials.lucky, this.materials.pops, this.materials.cocoapuffs], 
-                              [this.materials.crunch, this.materials.raisin, this.materials.cookie, this.materials.specialk], 
-                              [this.materials.pocky, this.materials.greentea, this.materials.strawberry, this.materials.banana], 
+      this.materialsMatrix = [[this.materials.cheerios, this.materials.frosted, this.materials.trix, this.materials.rice],
+                              [this.materials.cinnamon, this.materials.lucky, this.materials.pops, this.materials.cocoapuffs],
+                              [this.materials.crunch, this.materials.raisin, this.materials.cookie, this.materials.specialk],
+                              [this.materials.pocky, this.materials.greentea, this.materials.strawberry, this.materials.banana],
                               [this.materials.wheat, this.materials.motts, this.materials.cheese, this.materials.pop]]
 
 
@@ -392,7 +394,7 @@ class Vending_Machine extends Scene_Component
       this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
       for (let i = 0; i < 10; i++){
         //this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.buttonTextures[2 * i]);
-        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.materials.white);
+        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), (this.pressed[i] ? this.materials.yellow : this.materials.white));
       }
 
       //door in progress
