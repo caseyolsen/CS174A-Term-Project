@@ -93,16 +93,16 @@ class Vending_Machine extends Scene_Component
         this.press = [];
         this.currentPress = -1;
         this.buttonTransformations = [
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
-          Mat4.translation(Vec.of(2.725,          3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
-          Mat4.translation(Vec.of(2.725 + .375,   3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
-          Mat4.translation(Vec.of(2.725,          3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //6
-          Mat4.translation(Vec.of(2.725,          3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //7
-          Mat4.translation(Vec.of(2.725 + .375,   3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //8
-          Mat4.translation(Vec.of(2.725 + 2*.375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //9
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.8125,        3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
+          Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
+          Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
+          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //D
+          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //E
         ];
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
@@ -137,19 +137,19 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("4", ["4"], ()=>{
         this.press.unshift(4);
       });
-      this.key_triggered_button("5", ["5"], ()=>{
+      this.key_triggered_button("A", ["5"], ()=>{
         this.press.unshift(5);
       });
-      this.key_triggered_button("6", ["6"], ()=>{
+      this.key_triggered_button("B", ["6"], ()=>{
         this.press.unshift(6);
       });
-      this.key_triggered_button("7", ["7"], ()=>{
+      this.key_triggered_button("C", ["7"], ()=>{
         this.press.unshift(7);
       });
-      this.key_triggered_button("8", ["8"], ()=>{
+      this.key_triggered_button("D", ["8"], ()=>{
         this.press.unshift(8);
       });
-      this.key_triggered_button("9", ["9"], ()=>{
+      this.key_triggered_button("E", ["9"], ()=>{
         this.press.unshift(9);
       });
     }
