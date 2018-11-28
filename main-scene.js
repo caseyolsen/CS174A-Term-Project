@@ -116,6 +116,9 @@ class Vending_Machine extends Scene_Component
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } )
         }
 
+        this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' ) 
+              }
+
         this.timer;
         this.queue = [];
         this.curr = 0;
@@ -174,6 +177,14 @@ class Vending_Machine extends Scene_Component
         //create array for each button's transformations
         //also need member variables to implement button pushing
       }
+   
+   //helper function to implement sound
+  play_sound( name, volume = 1 )
+    { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
+      this.sounds[ name ].currentTime = 0;
+      this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
+      this.sounds[ name ].play();
+    }
 
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
@@ -196,44 +207,59 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("1", ["1"], ()=>{
         this.press.unshift(1);
         this.column = 0;
+        this.play_sound("button");
       });
       this.key_triggered_button("2", ["2"], ()=>{
         this.press.unshift(2);
         this.column = 1;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("3", ["3"], ()=>{
         this.press.unshift(3);
         this.column = 2;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("4", ["4"], ()=>{
         this.press.unshift(4);
-        this.column = 3;
+        this.column = 3;        
+        this.play_sound("button");
+
       });
       this.key_triggered_button("5", ["5"], ()=>{
         this.press.unshift(5);
         this.column = 4;
+        this.play_sound("button");
       });
       this.new_line();
 
       this.key_triggered_button("A", ["6"], ()=>{
         this.press.unshift(6);
         this.row = 0;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("B", ["7"], ()=>{
         this.press.unshift(7);
         this.row = 1;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("C", ["8"], ()=>{
         this.press.unshift(8);
         this.row = 2;
+        this.play_sound("button");
       });
       this.key_triggered_button("D", ["9"], ()=>{
         this.press.unshift(9);
         this.row = 3;
+        this.play_sound("button");
       });
       this.key_triggered_button("E", ["0"], ()=>{
         this.press.unshift(0);
         this.row = 4;
+        this.play_sound("button");
       });
     }
 
