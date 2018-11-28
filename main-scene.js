@@ -67,6 +67,16 @@ class Vending_Machine extends Scene_Component
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
+        //for shadow mapping
+        this.webgl_manager = context;      // Save off the Webgl_Manager object that created the scene.
+      this.scratchpad = document.createElement('canvas');
+      this.scratchpad_context = this.scratchpad.getContext('2d');     // A hidden canvas for re-sizing the real canvas to be square.
+      this.scratchpad.width   = 256;
+      this.scratchpad.height  = 256;
+      this.texture = new Texture ( context.gl, "", false, false );        // Initial image source: Blank gif file
+      this.texture.image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+      //create and submit shapes
         const shapes = { 'box': new Cube(),
                          'rounded_cylinder': new Rounded_Capped_Cylinder(100,50),
                          'cylinder': new Capped_Cylinder(2,12),
