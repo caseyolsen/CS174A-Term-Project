@@ -88,7 +88,7 @@ class Vending_Machine extends Scene_Component
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
-          
+
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
           pops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pops.jpg", true ) } ),
@@ -104,12 +104,12 @@ class Vending_Machine extends Scene_Component
           crunch: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/crunch.jpg", true ) } ),
           cookie: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cookie.jpg", true ) } ),
           specialk: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/specialk.jpg", true ) } ),
-          
+
           pocky: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pocky.jpg", true ) } ),
           greentea: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/greentea.jpg", true ) } ),
           strawberry: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/strawberry.jpg", true ) } ),
           banana: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/banana.jpg", true ) } ),
-          
+
           wheat: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/wheat.jpg", true ) } ),
           motts: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/motts.png", true ) } ),
           cheese: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheeseit.jpg", true ) } ),
@@ -120,30 +120,55 @@ class Vending_Machine extends Scene_Component
         this.queue = [];
         this.curr = 0;
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
-        this.liftFlap = false;
-        this.flapAngle = 0;
-        this.shakeTimer;
-        this.shake = [];
-        this.currentShake = 0;
+        this.row = -1;
+        this.column = -1;
+        this.trackMatrixArray = [];
+        this.materialsMatrix = [];
+        this.itemxPositionMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.itemyPositionMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.lrshakeTimer;
+        this.lrshake = [];
+        this.lrcurrentShake = 0;
+        this.fbshakeTimer;
+        this.fbshake = [];
+        this.fbcurrentShake = 0;
         this.pressTimer;
         this.press = [];
         this.currentPress = -1;
-        this.buttonTransformations = [
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //0
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+        this.buttonTransformations = [ //the ordering is weird I don't care
+          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //E
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
           Mat4.translation(Vec.of(2.8125,        3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
           Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
           Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
-          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //D
-          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //E
+          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
         ];
         this.buttonTextures = [
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white0.png", true)}), //white0
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow0.png", true)}), //yellow0
-
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowE.png", true)}), //yellowE
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white1.png", true)}), //white1
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow1.png", true)}), //yellow1
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white2.png", true)}), //white2
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow2.png", true)}), //yellow2
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white3.png", true)}), //white3
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow3.png", true)}), //yellow3
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white4.png", true)}), //white4
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow4.png", true)}), //yellow4
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white5.png", true)}), //white5
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow5.png", true)}), //yellow5
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteA.png", true)}), //whiteA
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowA.png", true)}), //yellowA
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteB.png", true)}), //whiteB
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowB.png", true)}), //yellowB
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteC.png", true)}), //whiteC
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowC.png", true)}), //yellowC
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteD.png", true)}), //whiteD
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD
         ];
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
@@ -151,49 +176,125 @@ class Vending_Machine extends Scene_Component
       }
 
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
-      this.key_triggered_button("Shake Left", ["["], () => { //we can come up with better buttons later
-        this.shake.unshift(1);
+      this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
+        this.lrshake.unshift(1);
       });
-      this.key_triggered_button("Shake Right", ["]"], () => {
-        this.shake.unshift(-1);
+      this.key_triggered_button("Shake Right", ["l"], () => {
+        this.lrshake.unshift(-1);
       });
-      //this.key_triggered_button("Lift Flap", ["l"], () => {
-      //  this.liftFlap = !this.liftFlap;
-      //});
+      this.key_triggered_button("Shake Forward", ["i"], () => {
+        this.fbshake.unshift(-1);
+      });
+      this.key_triggered_button("Shake Backwards", ["k"], () => {
+        this.fbshake.unshift(1);
+      });
+      this.new_line();
+
       //when a user presses these buttons, it corresponds with pressing a button on the vending machine
       //the button could light up and/or depress
       //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
-      this.key_triggered_button("0", ["0"], ()=>{
-        this.press.unshift(0);
-      });
       this.key_triggered_button("1", ["1"], ()=>{
         this.press.unshift(1);
+        this.column = 0;
       });
       this.key_triggered_button("2", ["2"], ()=>{
         this.press.unshift(2);
+        this.column = 1;
       });
       this.key_triggered_button("3", ["3"], ()=>{
         this.press.unshift(3);
+        this.column = 2;
       });
       this.key_triggered_button("4", ["4"], ()=>{
         this.press.unshift(4);
+        this.column = 3;
       });
-      this.key_triggered_button("A", ["5"], ()=>{
+      this.key_triggered_button("5", ["5"], ()=>{
         this.press.unshift(5);
+        this.column = 4;
       });
-      this.key_triggered_button("B", ["6"], ()=>{
+      this.new_line();
+
+      this.key_triggered_button("A", ["6"], ()=>{
         this.press.unshift(6);
+        this.row = 0;
       });
-      this.key_triggered_button("C", ["7"], ()=>{
+      this.key_triggered_button("B", ["7"], ()=>{
         this.press.unshift(7);
+        this.row = 1;
       });
-      this.key_triggered_button("D", ["8"], ()=>{
+      this.key_triggered_button("C", ["8"], ()=>{
         this.press.unshift(8);
+        this.row = 2;
       });
-      this.key_triggered_button("E", ["9"], ()=>{
+      this.key_triggered_button("D", ["9"], ()=>{
         this.press.unshift(9);
+        this.row = 3;
+      });
+      this.key_triggered_button("E", ["0"], ()=>{
+        this.press.unshift(0);
+        this.row = 4;
       });
     }
+
+    vend_item(graphics_state, vm_transform, t, dt)
+    {
+
+      // GATES
+      for (let i = 0; i < 5; i++)
+      {
+        for (let j = 0; j < 4; j++)
+        {
+            if (this.column == -1 || this.row == -1)
+            {
+                  for (let k = 0; k < 3; k++)
+                  {
+                        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                        this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                  }     
+            }
+            else
+            {
+                  // this if statement is where it gets hard
+                  // its responsible for moving the lane and having the item fall
+                  if (this.row == i && this.column == j)
+                  {
+                        if (this.itemxPositionMatrix[i][j] < 14)
+                        {
+                              this.itemxPositionMatrix[i][j] += 1;
+                        }
+                        else
+                        {
+                              this.row = -1;
+                              this.column = -1;
+                        }
+
+                        for (let k = 0; k < 3; k++)
+                        {
+                              // moving the boxes and gates forward
+                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                        } 
+                  }
+                  else
+                  {
+                        for (let k = 0; k < 3; k++)
+                        {
+                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                        } 
+                  }
+            }
+
+        }
+      }
+      //if (this.row != -1 && this.column != -1)
+      //{
+      //      this.row = -1;
+      //      this.column = -1;
+      //}
+    }
+
 
     display( graphics_state ){
       const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
@@ -201,24 +302,41 @@ class Vending_Machine extends Scene_Component
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
-      if (this.currentShake === 0){
-        if (this.shake.length){ //checks that we don't try to pop the empty queue
-          this.currentShake = this.shake.pop();
-          this.shakeTimer = 0; //resets timer
+      //left and right
+      if (this.lrcurrentShake === 0){
+        if (this.lrshake.length){ //checks that we don't try to pop the empty queue
+          this.lrcurrentShake = this.lrshake.pop();
+          this.lrshakeTimer = 0; //resets timer
         }
       }
-      if (this.currentShake !== 0){
-        if (this.shakeTimer === 20){
-          this.currentShake = 0;
+      if (this.lrcurrentShake !== 0){
+        if (this.lrshakeTimer === 20){
+          this.lrcurrentShake = 0;
         }
         else {
-          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.currentShake, -7.2, 0))).times(Mat4.rotation(this.currentShake * Math.sin(Math.PI * this.shakeTimer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.currentShake, 7.2, 0)));
-          this.shakeTimer++;
+          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
+          this.lrshakeTimer++;
+        }
+      }
+      //forward and backwards
+      if (this.fbcurrentShake === 0){
+        if (this.fbshake.length){ //checks that we don't try to pop the empty queue
+          this.fbcurrentShake = this.fbshake.pop();
+          this.fbshakeTimer = 0; //resets timer
+        }
+      }
+      if (this.fbcurrentShake !== 0){
+        if (this.fbshakeTimer === 20){
+          this.fbcurrentShake = 0;
+        }
+        else {
+          //need to calculate this
+          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/20)/4, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
+          this.fbshakeTimer++;
         }
       }
 
-      //for button pushing, we would use a switch for the queue. if we created an array of transformation matrices for the buttons
-      //then a button press in the queue results on the same process as above on a matrix on the array
+      //a button press in the queue results on the same process as above on a matrix on the array
       if (this.currentPress === -1){
         if (this.press.length){
           this.currentPress = this.press.pop();
@@ -283,7 +401,7 @@ class Vending_Machine extends Scene_Component
       //  }
       //  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-4.5,5.5))).times(Mat4.rotation(dt, Vec.of(1,0,0))).times(Mat4.scale(Vec.of(2.8, 0.8, 0.02))), this.materials.white);
       //}
-      
+
       // SHELVES
       // shelf 1
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,5,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
@@ -292,22 +410,20 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-0.25,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-2,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
 
-      // GATES
-      for (let i = 0; i < 5; i++)
-      {
-        for (let j = 0; j < 4; j++)
-        {
-          for (let k = 0; k < 3; k++)
-          {
-            this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-          }
-        }
-      }
+      this.materialsMatrix = [[this.materials.cheerios, this.materials.frosted, this.materials.trix, this.materials.rice], 
+                              [this.materials.cinnamon, this.materials.lucky, this.materials.pops, this.materials.cocoapuffs], 
+                              [this.materials.crunch, this.materials.raisin, this.materials.cookie, this.materials.specialk], 
+                              [this.materials.pocky, this.materials.greentea, this.materials.strawberry, this.materials.banana], 
+                              [this.materials.wheat, this.materials.motts, this.materials.cheese, this.materials.pop]]
+
+
+      this.vend_item(graphics_state, vm_transform, t, dt);
 
       //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
       this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
       for (let i = 0; i < 10; i++){
+        //this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.buttonTextures[2 * i]);
         this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.materials.white);
       }
 
@@ -321,8 +437,8 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
 
-
-      //creating VISIBLE cereal boxes 
+/*
+      //creating VISIBLE cereal boxes
       //first layer
       //row 1
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
@@ -411,7 +527,7 @@ class Vending_Machine extends Scene_Component
        this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pop);
 
  //this.shapes.rounded_cylinder.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(15,0,0))).times(Mat4.rotation(Math.PI*0.5, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(-5,0,0))).times(Mat4.scale(Vec.of(0.2,1,1))), this.materials.black);
- 
 
+*/
     }
   }
