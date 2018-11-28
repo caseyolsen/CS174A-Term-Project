@@ -67,6 +67,16 @@ class Vending_Machine extends Scene_Component
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
+        //for shadow mapping
+        this.webgl_manager = context;      // Save off the Webgl_Manager object that created the scene.
+      this.scratchpad = document.createElement('canvas');
+      this.scratchpad_context = this.scratchpad.getContext('2d');     // A hidden canvas for re-sizing the real canvas to be square.
+      this.scratchpad.width   = 256;
+      this.scratchpad.height  = 256;
+      this.texture = new Texture ( context.gl, "", false, false );        // Initial image source: Blank gif file
+      this.texture.image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+      //create and submit shapes
         const shapes = { 'box': new Cube(),
                          'rounded_cylinder': new Rounded_Capped_Cylinder(100,50),
                          'cylinder': new Capped_Cylinder(2,12),
@@ -107,6 +117,9 @@ class Vending_Machine extends Scene_Component
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } )
         }
 
+        this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' )
+              }
+
         this.timer;
         this.queue = [];
         this.curr = 0;
@@ -115,8 +128,16 @@ class Vending_Machine extends Scene_Component
         this.column = -1;
         this.trackMatrixArray = [];
         this.materialsMatrix = [];
-        this.itemxPositionMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
-        this.itemyPositionMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.itemxPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
+        this.itemyPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
         this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
         this.lrshakeTimer;
         this.lrshake = [];
@@ -167,6 +188,14 @@ class Vending_Machine extends Scene_Component
         //also need member variables to implement button pushing
       }
 
+   //helper function to implement sound
+  play_sound( name, volume = 1 )
+    { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
+      this.sounds[ name ].currentTime = 0;
+      this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
+      this.sounds[ name ].play();
+    }
+
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
         this.lrshake.unshift(1);
@@ -188,44 +217,59 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("1", ["1"], ()=>{
         this.press.unshift(1);
         this.column = 0;
+        this.play_sound("button");
       });
       this.key_triggered_button("2", ["2"], ()=>{
         this.press.unshift(2);
         this.column = 1;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("3", ["3"], ()=>{
         this.press.unshift(3);
         this.column = 2;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("4", ["4"], ()=>{
         this.press.unshift(4);
         this.column = 3;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("5", ["5"], ()=>{
         this.press.unshift(5);
         this.column = 4;
+        this.play_sound("button");
       });
       this.new_line();
 
       this.key_triggered_button("A", ["6"], ()=>{
         this.press.unshift(6);
         this.row = 0;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("B", ["7"], ()=>{
         this.press.unshift(7);
         this.row = 1;
+        this.play_sound("button");
+
       });
       this.key_triggered_button("C", ["8"], ()=>{
         this.press.unshift(8);
         this.row = 2;
+        this.play_sound("button");
       });
       this.key_triggered_button("D", ["9"], ()=>{
         this.press.unshift(9);
         this.row = 3;
+        this.play_sound("button");
       });
       this.key_triggered_button("E", ["0"], ()=>{
         this.press.unshift(0);
         this.row = 4;
+        this.play_sound("button");
       });
     }
 
@@ -237,54 +281,38 @@ class Vending_Machine extends Scene_Component
       {
         for (let j = 0; j < 4; j++)
         {
-            if (this.column == -1 || this.row == -1)
+            // this if statement is where it gets hard
+            // its responsible for moving the lane and having the item fall
+            if (this.row == i && this.column == j)
             {
-                  for (let k = 0; k < 3; k++)
+                  // change front back position
+                  if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
                   {
-                        this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                        this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
-                  }
-            }
-            else
-            {
-                  // this if statement is where it gets hard
-                  // its responsible for moving the lane and having the item fall
-                  if (this.row == i && this.column == j)
-                  {
-                        if (this.itemxPositionMatrix[i][j] < 14)
+                        for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
                         {
-                              this.itemxPositionMatrix[i][j] += 1;
-                        }
-                        else
-                        {
-                              this.row = -1;
-                              this.column = -1;
-                        }
-
-                        for (let k = 0; k < 3; k++)
-                        {
-                              // moving the boxes and gates forward
-                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+                              this.itemxPositionMatrix[i][j][2-n] += 1;
                         }
                   }
                   else
                   {
-                        for (let k = 0; k < 3; k++)
-                        {
-                              this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                              this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.25,4-k*1.4+this.itemxPositionMatrix[i][j]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
-                        }
+                        this.itemTimesPressedMatrix[i][j] += 1;
+                        this.row = -1;
+                        this.column = -1;
                   }
             }
 
+            for (let k = 0; k < 3; k++)
+            {
+                  if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
+                  {
+                        this.itemyPositionMatrix[i][j][k] += 1/20;
+                        this.itemyPositionMatrix[i][j][k] *= 1.1;
+                  }
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                  this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 1))), this.materialsMatrix[i][j]);
+            }
         }
       }
-      //if (this.row != -1 && this.column != -1)
-      //{
-      //      this.row = -1;
-      //      this.column = -1;
-      //}
     }
 
 
