@@ -244,29 +244,29 @@ class Vending_Machine extends Scene_Component
       });
       this.new_line();
 
-      this.key_triggered_button("A", ["6"], ()=>{
+      this.key_triggered_button("A", ["a"], ()=>{
         this.press.unshift(6);
         this.row = 0;
         this.play_sound("button");
 
       });
-      this.key_triggered_button("B", ["7"], ()=>{
+      this.key_triggered_button("B", ["b"], ()=>{
         this.press.unshift(7);
         this.row = 1;
         this.play_sound("button");
 
       });
-      this.key_triggered_button("C", ["8"], ()=>{
+      this.key_triggered_button("C", ["c"], ()=>{
         this.press.unshift(8);
         this.row = 2;
         this.play_sound("button");
       });
-      this.key_triggered_button("D", ["9"], ()=>{
+      this.key_triggered_button("D", ["d"], ()=>{
         this.press.unshift(9);
         this.row = 3;
         this.play_sound("button");
       });
-      this.key_triggered_button("E", ["0"], ()=>{
+      this.key_triggered_button("E", ["e"], ()=>{
         this.press.unshift(0);
         this.row = 4;
         this.play_sound("button");
