@@ -139,16 +139,16 @@ class Vending_Machine extends Scene_Component
         this.press = [];
         this.currentPress = -1;
         this.buttonTransformations = [ //the ordering is weird I don't care
-          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //E
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
-          Mat4.translation(Vec.of(2.8125,        3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
-          Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
-          Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
-          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
+          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //E
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
+          Mat4.translation(Vec.of(2.8125,        3.25,          5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
+          Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
+          Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
+          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
         ];
         this.buttonTextures = [
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE
@@ -433,8 +433,8 @@ class Vending_Machine extends Scene_Component
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
       this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
       for (let i = 0; i < 10; i++){
-        //this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.buttonTextures[2 * i]);
-        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), (this.pressed[i] ? this.materials.yellow : this.materials.white));
+        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), (this.pressed[i] ? this.buttonTextures[2 * i + 1] : this.buttonTextures[2 * i]));
+        //this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), (this.pressed[i] ? this.materials.yellow : this.materials.white));
       }
 
       //door in progress
