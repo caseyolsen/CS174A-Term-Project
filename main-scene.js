@@ -75,6 +75,7 @@ class Vending_Machine extends Scene_Component
         this.use_mipMap = true;
 
         this.materials = {
+          glass: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 0.25), { ambient: 0, diffusivity: 1 } ),
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
@@ -497,9 +498,12 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,10,6))).times(Mat4.scale(Vec.of(.5,.5,.5))), this.materials.white.override({ambient:1})); //light "bulb"
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
-
+//shadow
 //        this.shapes.square.draw(graphics_state, vm_transform
 //        .times(Mat4.scale(Vec.of(12,12,0)))
 //        .times(Mat4.translation(Vec.of(5,0,0))), this.materials.shadow);
+
+//transparent glass
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.1))), this.materials.glass);
     }
   }
