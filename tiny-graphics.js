@@ -452,7 +452,7 @@ class Webgl_Manager      // This class manages a whole graphics program for one 
   constructor( canvas, background_color, dimensions )
     { let gl, demos = [];
       Object.assign( this, { instances: new Map(), shapes_in_use: {}, scene_components: [], prev_time: 0, canvas,
-                             globals: { animate: true, graphics_state: new Graphics_State(), scorekeeper: new Scorekeeper() } } );
+                             globals: { animate: true, graphics_state: new Graphics_State()} } );
 
       for ( let name of [ "webgl", "experimental-webgl", "webkit-3d", "moz-webgl" ] )   // Get the GPU ready, creating a new WebGL context
         if (  gl = this.gl = this.canvas.getContext( name ) ) break;                    // for this canvas.
