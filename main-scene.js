@@ -136,6 +136,11 @@ class Vending_Machine extends Scene_Component
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]], 
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]], 
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
+        this.gatexPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]], 
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]], 
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]], 
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
         this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
         this.lrshakeTimer;
         this.lrshake = [];
@@ -251,13 +256,13 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("A", ["6"], ()=>{
         this.press.unshift(6);
-        this.row = 0;
+        this.row = 4;
         this.play_sound("button");
 
       });
       this.key_triggered_button("B", ["7"], ()=>{
         this.press.unshift(7);
-        this.row = 1;
+        this.row = 3;
         this.play_sound("button");
 
       });
@@ -268,12 +273,12 @@ class Vending_Machine extends Scene_Component
       });
       this.key_triggered_button("D", ["9"], ()=>{
         this.press.unshift(9);
-        this.row = 3;
+        this.row = 1;
         this.play_sound("button");
       });
       this.key_triggered_button("E", ["0"], ()=>{
         this.press.unshift(0);
-        this.row = 4;
+        this.row = 0;
         this.play_sound("button");
       });
     }
@@ -297,6 +302,11 @@ class Vending_Machine extends Scene_Component
                         {
                               this.itemxPositionMatrix[i][j][2-n] += 1;
                               this.play_sound("vending");
+                              this.gatexPositionMatrix[i][j][2-n] += 1;
+                              if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                              {
+                                    this.gatexPositionMatrix[i][j][2-n] = 0;
+                              }
                         }
                   }
                   else
@@ -321,6 +331,7 @@ class Vending_Machine extends Scene_Component
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                   
                   //vending machine items
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
             } 
         }
