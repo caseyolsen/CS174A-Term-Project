@@ -50,9 +50,8 @@ window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        if( !context.globals.has_controls   )
-          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
-
+        //if( !context.globals.has_controls   )
+        //  context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
         const r = context.width/context.height;
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
@@ -193,6 +192,9 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Right", ["l"], () => {
         this.lrshake.unshift(-1);
       });
+      this.new_line();
+
+
       this.key_triggered_button("Shake Forward", ["i"], () => {
         this.fbshake.unshift(-1);
       });
@@ -201,64 +203,69 @@ class Vending_Machine extends Scene_Component
       });
       this.new_line();
 
-      //when a user presses these buttons, it corresponds with pressing a button on the vending machine
-      //the button could light up and/or depress
-      //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
+
+      //pressing buttons on the vending machine
+      this.key_triggered_button("A", ["a"], ()=>{
+        this.press.unshift(6);
+        this.row = 0;
+        this.play_sound("button");
+      });
       this.key_triggered_button("1", ["1"], ()=>{
         this.press.unshift(1);
         this.column = 0;
         this.play_sound("button");
       });
-      this.key_triggered_button("2", ["2"], ()=>{
-        this.press.unshift(2);
-        this.column = 1;
-        this.play_sound("button");
-
-      });
-      this.key_triggered_button("3", ["3"], ()=>{
-        this.press.unshift(3);
-        this.column = 2;
-        this.play_sound("button");
-
-      });
-      this.key_triggered_button("4", ["4"], ()=>{
-        this.press.unshift(4);
-        this.column = 3;
-        this.play_sound("button");
-
-      });
-      this.key_triggered_button("5", ["5"], ()=>{
-        this.press.unshift(5);
-        this.column = 4;
-        this.play_sound("button");
-      });
       this.new_line();
 
-      this.key_triggered_button("A", ["a"], ()=>{
-        this.press.unshift(6);
-        this.row = 0;
-        this.play_sound("button");
 
-      });
       this.key_triggered_button("B", ["b"], ()=>{
         this.press.unshift(7);
         this.row = 1;
         this.play_sound("button");
 
       });
+      this.key_triggered_button("2", ["2"], ()=>{
+        this.press.unshift(2);
+        this.column = 1;
+        this.play_sound("button");
+      });
+      this.new_line();
+
+
       this.key_triggered_button("C", ["c"], ()=>{
         this.press.unshift(8);
         this.row = 2;
         this.play_sound("button");
       });
+      this.key_triggered_button("3", ["3"], ()=>{
+        this.press.unshift(3);
+        this.column = 2;
+        this.play_sound("button");
+      });
+      this.new_line();
+
+
       this.key_triggered_button("D", ["d"], ()=>{
         this.press.unshift(9);
         this.row = 3;
         this.play_sound("button");
       });
+      this.key_triggered_button("4", ["4"], ()=>{
+        this.press.unshift(4);
+        this.column = 3;
+        this.play_sound("button");
+      });
+      this.new_line();
+
+
       this.key_triggered_button("E", ["e"], ()=>{
         this.press.unshift(0);
         this.row = 4;
+        this.play_sound("button");
+      });
+      this.key_triggered_button("5", ["5"], ()=>{
+        this.press.unshift(5);
+        this.column = 4;
         this.play_sound("button");
       });
     }
@@ -303,6 +310,7 @@ class Vending_Machine extends Scene_Component
             }
         }
       }
+      //this.scorekeeper.score +=1;
     }
 
 
