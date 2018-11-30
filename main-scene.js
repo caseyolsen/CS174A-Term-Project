@@ -22,16 +22,16 @@ class Shadow_Shader extends Phong_Shader
       this.update_matrices( g_state, model_transform, gpu, gl );
       gl.uniform1f ( gpu.animation_time_loc, g_state.animation_time / 1000 );
 
-      if( g_state.gouraud === undefined ) { g_state.gouraud = g_state.color_normals = false; } // Keep the flags seen by the shader 
-      gl.uniform1i( gpu.GOURAUD_loc, g_state.gouraud || material.gouraud ); // program up-to-date and make sure 
+      if( g_state.gouraud === undefined ) { g_state.gouraud = g_state.color_normals = false; } // Keep the flags seen by the shader
+      gl.uniform1i( gpu.GOURAUD_loc, g_state.gouraud || material.gouraud ); // program up-to-date and make sure
       gl.uniform1i( gpu.COLOR_NORMALS_loc, g_state.color_normals ); // they are declared.
 
       const textures = [];
       let textureIndex = 0;
 
       // set the shadow for Phong Shader
-      if (material.shadow ) 
-      { 
+      if (material.shadow )
+      {
             gpu.shader_attributes["tex_coord"].enabled = true;
             g_state.shadow = true;
 
@@ -42,20 +42,20 @@ class Shadow_Shader extends Phong_Shader
 
             gl.uniform1i(gpu.shadow_loc, textureIndex++); // texture unit 0
       }
-      else 
-      { 
-            g_state.shadow = false; 
+      else
+      {
+            g_state.shadow = false;
       }
 
       gl.uniform1i( gpu.SHADOW_loc, g_state.shadow);
-      gl.uniform4fv( gpu.shapeColor_loc, material.color ); // Send the desired shape-wide material qualities 
+      gl.uniform4fv( gpu.shapeColor_loc, material.color ); // Send the desired shape-wide material qualities
       gl.uniform1f ( gpu.ambient_loc, material.ambient ); // to the graphics card, where they will tweak the
       gl.uniform1f ( gpu.diffusivity_loc, material.diffusivity ); // Phong lighting formula.
       gl.uniform1f ( gpu.specularity_loc, material.specularity );
       gl.uniform1f ( gpu.smoothness_loc, material.smoothness );
 
       if( material.texture ) // NOTE: To signal not to draw a texture, omit the texture parameter from Materials.
-      { 
+      {
             gpu.shader_attributes["tex_coord"].enabled = true;
             gl.uniform1f ( gpu.USE_TEXTURE_loc, 1 );
             gl.bindTexture(gl.TEXTURE_2D, material.texture.id);
@@ -64,9 +64,9 @@ class Shadow_Shader extends Phong_Shader
             gl.uniform1i(gpu.texture_loc, textureIndex);
 
       }
-      else 
-      { 
-            gl.uniform1f ( gpu.USE_TEXTURE_loc, 0 ); gpu.shader_attributes["tex_coord"].enabled = false; 
+      else
+      {
+            gl.uniform1f ( gpu.USE_TEXTURE_loc, 0 ); gpu.shader_attributes["tex_coord"].enabled = false;
       }
 
       textureIndex = 0;
@@ -84,7 +84,7 @@ class Shadow_Shader extends Phong_Shader
       if( !g_state.lights.length ) return;
       var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
       for( var i = 0; i < 4 * g_state.lights.length; i++ )
-      { 
+      {
             lightPositions_flattened .push( g_state.lights[ Math.floor(i/4) ].position[i%4] );
             lightColors_flattened .push( g_state.lights[ Math.floor(i/4) ].color[i%4] );
             lightAttenuations_flattened[ Math.floor(i/4) ] = g_state.lights[ Math.floor(i/4) ].attenuation;
@@ -115,7 +115,8 @@ window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        //context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
+        if( !context.globals.has_controls   )
+          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
         const r = context.width/context.height;
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
@@ -464,7 +465,7 @@ class Vending_Machine extends Scene_Component
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
 
-      
+
 //       this.play_sound("hum");
 
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
