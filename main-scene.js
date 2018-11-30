@@ -330,7 +330,7 @@ class Vending_Machine extends Scene_Component
       //pressing buttons on the vending machine
       this.key_triggered_button("A", ["a"], ()=>{
         this.press.unshift(6);
-        this.row = 0;
+        this.row = 4;
         this.play_sound("button");
       });
       this.key_triggered_button("1", ["1"], ()=>{
@@ -343,7 +343,7 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("B", ["b"], ()=>{
         this.press.unshift(7);
-        this.row = 1;
+        this.row = 3;
         this.play_sound("button");
 
       });
@@ -370,7 +370,7 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("D", ["d"], ()=>{
         this.press.unshift(9);
-        this.row = 3;
+        this.row = 1;
         this.play_sound("button");
       });
       this.key_triggered_button("4", ["4"], ()=>{
@@ -441,13 +441,16 @@ class Vending_Machine extends Scene_Component
                   {
                         this.itemyPositionMatrix[i][j][k] += 1/20;
                         this.itemyPositionMatrix[i][j][k] *= 1.1;
+                        
+                        if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
+                        {
+                              this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                        }
+                        
                   }
-                  if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
-                  {
-                        this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                  }
+                  
                   //gates for vending machine items
-                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                  //this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
 
                   //vending machine items
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
