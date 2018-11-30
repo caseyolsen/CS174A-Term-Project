@@ -75,6 +75,7 @@ class Vending_Machine extends Scene_Component
         this.use_mipMap = true;
 
         this.materials = {
+          //implement transparency with glass by manipulating alpha level
           glass: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 0.25), { ambient: 0, diffusivity: 1 } ),
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
@@ -113,7 +114,8 @@ class Vending_Machine extends Scene_Component
         this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' ),
                   vending: new Audio('assets/sounds/vending.wav'),
                   drop: new Audio('assets/sounds/drop.wav'),
-                  shake: new Audio('assets/sounds/shake.mp3')
+                  shake: new Audio('assets/sounds/shake.mp3'),
+                  hum: new Audio('assets/sounds/hum.wav')
               }
 
         this.timer;
@@ -189,6 +191,7 @@ class Vending_Machine extends Scene_Component
         this.textures = [];//fill with texture maps
         //create array for each button's transformations
         //also need member variables to implement button pushing
+
       }
    
    //helper function to implement sound
@@ -219,9 +222,7 @@ class Vending_Machine extends Scene_Component
         this.fbshake.unshift(1);
       });
       this.new_line();
-      this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ), 
-                { style:"width:200px; height:" + 200 * this.aspect_ratio + "px" } ) );
-
+     
       //when a user presses these buttons, it corresponds with pressing a button on the vending machine
       //the button could light up and/or depress
       //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
@@ -282,6 +283,12 @@ class Vending_Machine extends Scene_Component
         this.row = 0;
         this.play_sound("button");
       });
+      this.new_line();
+      this.new_line();
+      //shadow image
+      this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ), 
+                { style:"width:200px; height:" + 200 * this.aspect_ratio + "px" } ) );
+
     }
 
     vend_item(graphics_state, vm_transform, t, dt)
@@ -345,6 +352,7 @@ class Vending_Machine extends Scene_Component
       graphics_state.lights = this.lights;
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
+
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
       //left and right
       if (this.lrcurrentShake === 0){
