@@ -180,7 +180,7 @@ class Vending_Machine extends Scene_Component
           yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
           vm_shadow: context.get_instance( Shadow_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3, shadow: this.texture } ),
-          chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 1, 1, 1), {ambient: 0.2, diffusivity: .3, texture: context.get_instance("assets/floor.jpg")}),
+          chair: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.3, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/bambootexture.jpg")}),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -362,7 +362,7 @@ class Vending_Machine extends Scene_Component
       this.new_line();
 
 
-      this.key_triggered_button("Pause/Play", ["p"], () =>{
+      this.key_triggered_button("Play/Pause", ["p"], () =>{
         this.inProgress = !this.inProgress;
       });
       this.new_line();
@@ -765,7 +765,6 @@ class Vending_Machine extends Scene_Component
       this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.5,1.5,1.5))), this.materials.black);
       //chair
       this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 4))).times(Mat4.scale(Vec.of(2,2,2))), this.materials.chair);
-
 
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
