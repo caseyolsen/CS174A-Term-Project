@@ -22,16 +22,16 @@ class Shadow_Shader extends Phong_Shader
       this.update_matrices( g_state, model_transform, gpu, gl );
       gl.uniform1f ( gpu.animation_time_loc, g_state.animation_time / 1000 );
 
-      if( g_state.gouraud === undefined ) { g_state.gouraud = g_state.color_normals = false; } // Keep the flags seen by the shader 
-      gl.uniform1i( gpu.GOURAUD_loc, g_state.gouraud || material.gouraud ); // program up-to-date and make sure 
+      if( g_state.gouraud === undefined ) { g_state.gouraud = g_state.color_normals = false; } // Keep the flags seen by the shader
+      gl.uniform1i( gpu.GOURAUD_loc, g_state.gouraud || material.gouraud ); // program up-to-date and make sure
       gl.uniform1i( gpu.COLOR_NORMALS_loc, g_state.color_normals ); // they are declared.
 
       const textures = [];
       let textureIndex = 0;
 
       // set the shadow for Phong Shader
-      if (material.shadow ) 
-      { 
+      if (material.shadow )
+      {
             gpu.shader_attributes["tex_coord"].enabled = true;
             g_state.shadow = true;
 
@@ -42,20 +42,20 @@ class Shadow_Shader extends Phong_Shader
 
             gl.uniform1i(gpu.shadow_loc, textureIndex++); // texture unit 0
       }
-      else 
-      { 
-            g_state.shadow = false; 
+      else
+      {
+            g_state.shadow = false;
       }
 
       gl.uniform1i( gpu.SHADOW_loc, g_state.shadow);
-      gl.uniform4fv( gpu.shapeColor_loc, material.color ); // Send the desired shape-wide material qualities 
+      gl.uniform4fv( gpu.shapeColor_loc, material.color ); // Send the desired shape-wide material qualities
       gl.uniform1f ( gpu.ambient_loc, material.ambient ); // to the graphics card, where they will tweak the
       gl.uniform1f ( gpu.diffusivity_loc, material.diffusivity ); // Phong lighting formula.
       gl.uniform1f ( gpu.specularity_loc, material.specularity );
       gl.uniform1f ( gpu.smoothness_loc, material.smoothness );
 
       if( material.texture ) // NOTE: To signal not to draw a texture, omit the texture parameter from Materials.
-      { 
+      {
             gpu.shader_attributes["tex_coord"].enabled = true;
             gl.uniform1f ( gpu.USE_TEXTURE_loc, 1 );
             gl.bindTexture(gl.TEXTURE_2D, material.texture.id);
@@ -64,9 +64,9 @@ class Shadow_Shader extends Phong_Shader
             gl.uniform1i(gpu.texture_loc, textureIndex);
 
       }
-      else 
-      { 
-            gl.uniform1f ( gpu.USE_TEXTURE_loc, 0 ); gpu.shader_attributes["tex_coord"].enabled = false; 
+      else
+      {
+            gl.uniform1f ( gpu.USE_TEXTURE_loc, 0 ); gpu.shader_attributes["tex_coord"].enabled = false;
       }
 
       textureIndex = 0;
@@ -84,7 +84,7 @@ class Shadow_Shader extends Phong_Shader
       if( !g_state.lights.length ) return;
       var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
       for( var i = 0; i < 4 * g_state.lights.length; i++ )
-      { 
+      {
             lightPositions_flattened .push( g_state.lights[ Math.floor(i/4) ].position[i%4] );
             lightColors_flattened .push( g_state.lights[ Math.floor(i/4) ].color[i%4] );
             lightAttenuations_flattened[ Math.floor(i/4) ] = g_state.lights[ Math.floor(i/4) ].attenuation;
@@ -146,7 +146,8 @@ window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        //context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
+        if( !context.globals.has_controls   )
+          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
         const r = context.width/context.height;
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
@@ -273,26 +274,26 @@ class Vending_Machine extends Scene_Component
           Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
         ];
         this.buttonTextures = [
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE 
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowE.png", true)}), //yellowE
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white1.png", true)}), //white1
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow1.png", true)}), //yellow1
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white2.png", true)}), //white2
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow2.png", true)}), //yellow2
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white3.png", true)}), //white3
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow3.png", true)}), //yellow3
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white4.png", true)}), //white4
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow4.png", true)}), //yellow4
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/white5.png", true)}), //white5
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellow5.png", true)}), //yellow5
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteA.png", true)}), //whiteA (index 12)
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowA.png", true)}), //yellowA
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteB.png", true)}), //whiteB
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowB.png", true)}), //yellowB
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteC.png", true)}), //whiteC
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowC.png", true)}), //yellowC
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteD.png", true)}), //whiteD
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD (index 19)
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE 
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellowE.png", true)}), //yellowE
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/white1.png", true)}), //white1
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellow1.png", true)}), //yellow1
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/white2.png", true)}), //white2
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellow2.png", true)}), //yellow2
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/white3.png", true)}), //white3
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellow3.png", true)}), //yellow3
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/white4.png", true)}), //white4
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellow4.png", true)}), //yellow4
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/white5.png", true)}), //white5
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellow5.png", true)}), //yellow5
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteA.png", true)}), //whiteA (index 12)
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellowA.png", true)}), //yellowA
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteB.png", true)}), //whiteB
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellowB.png", true)}), //yellowB
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteC.png", true)}), //whiteC
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellowC.png", true)}), //yellowC
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteD.png", true)}), //whiteD
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD (index 19)
         ];
         this.pressed = [false, false, false, false, false, false, false, false, false, false];
 
@@ -368,7 +369,7 @@ class Vending_Machine extends Scene_Component
       //pressing buttons on the vending machine
       this.key_triggered_button("A", ["a"], ()=>{
         this.press.unshift(6);
-        this.row = 0;
+        this.row = 4;
         this.play_sound("button");
       });
       this.key_triggered_button("1", ["1"], ()=>{
@@ -381,7 +382,7 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("B", ["b"], ()=>{
         this.press.unshift(7);
-        this.row = 1;
+        this.row = 3;
         this.play_sound("button");
 
       });
@@ -408,7 +409,7 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("D", ["d"], ()=>{
         this.press.unshift(9);
-        this.row = 3;
+        this.row = 1;
         this.play_sound("button");
       });
       this.key_triggered_button("4", ["4"], ()=>{
@@ -479,11 +480,18 @@ class Vending_Machine extends Scene_Component
                   {
                         this.itemyPositionMatrix[i][j][k] += 1/20;
                         this.itemyPositionMatrix[i][j][k] *= 1.1;
+                        
+                        if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
+                        {
+                              this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                        }
+                        
                   }
                   if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
                   {
                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
                   }
+                  
 
             //vending machine labels
             this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.07, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*j+2]);
@@ -514,7 +522,7 @@ class Vending_Machine extends Scene_Component
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
 
-      
+
 //       this.play_sound("hum");
 
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
