@@ -1,26 +1,16 @@
 window.Cube = window.classes.Cube =
-class Cube extends Shape                 // Here's a complete, working example of a Shape subclass.  It is a blueprint for a cube.
-  { constructor()
-      { super( "positions", "normals" ); // Name the values we'll define per each vertex.  They'll have positions and normals.
-
-        // First, specify the vertex positions -- just a bunch of points that exist at the corners of an imaginary cube.
-        this.positions.push( ...Vec.cast( [-1,-1,-1], [1,-1,-1], [-1,-1,1], [1,-1,1], [1,1,-1],  [-1,1,-1],  [1,1,1],  [-1,1,1],
-                                          [-1,-1,-1], [-1,-1,1], [-1,1,-1], [-1,1,1], [1,-1,1],  [1,-1,-1],  [1,1,1],  [1,1,-1],
-                                          [-1,-1,1],  [1,-1,1],  [-1,1,1],  [1,1,1], [1,-1,-1], [-1,-1,-1], [1,1,-1], [-1,1,-1] ) );
-        // Supply vectors that point away from eace face of the cube.  They should match up with the points in the above list
-        // Normal vectors are needed so the graphics engine can know if the shape is pointed at light or not, and color it accordingly.
-        this.normals.push(   ...Vec.cast( [0,-1,0], [0,-1,0], [0,-1,0], [0,-1,0], [0,1,0], [0,1,0], [0,1,0], [0,1,0], [-1,0,0], [-1,0,0],
-                                          [-1,0,0], [-1,0,0], [1,0,0],  [1,0,0],  [1,0,0], [1,0,0], [0,0,1], [0,0,1], [0,0,1],   [0,0,1],
-                                          [0,0,-1], [0,0,-1], [0,0,-1], [0,0,-1] ) );
-
-                 // Those two lists, positions and normals, fully describe the "vertices".  What's the "i"th vertex?  Simply the combined
-                 // data you get if you look up index "i" of both lists above -- a position and a normal vector, together.  Now let's
-                 // tell it how to connect vertex entries into triangles.  Every three indices in this list makes one triangle:
-        this.indices.push( 0, 1, 2, 1, 3, 2, 4, 5, 6, 5, 7, 6, 8, 9, 10, 9, 11, 10, 12, 13,
-                          14, 13, 15, 14, 16, 17, 18, 17, 19, 18, 20, 21, 22, 21, 23, 22 );
-        // It stinks to manage arrays this big.  Later we'll show code that generates these same cube vertices more automatically.
-      }
-  }
+class Cube extends Shape    // A cube inserts six square strips into its arrays.
+{ constructor()
+    { super( "positions", "normals", "texture_coords" );
+      for( var i = 0; i < 3; i++ )
+        for( var j = 0; j < 2; j++ )
+        { var square_transform = Mat4.rotation( i == 0 ? Math.PI/2 : 0, Vec.of(1, 0, 0) )
+                         .times( Mat4.rotation( Math.PI * j - ( i == 1 ? Math.PI/2 : 0 ), Vec.of( 0, 1, 0 ) ) )
+                         .times( Mat4.translation([ 0, 0, 1 ]) );
+          Square.insert_transformed_copy_into( this, [], square_transform );
+        }
+    }
+}
 
 window.Cube_Outline = window.classes.Cube_Outline =
 class Cube_Outline extends Shape
@@ -60,13 +50,22 @@ window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        if( !context.globals.has_controls   )
-          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
-
+        //if( !context.globals.has_controls   )
+        //  context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
         const r = context.width/context.height;
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
 
+        //for shadow mapping
+        this.webgl_manager = context;      // Save off the Webgl_Manager object that created the scene.
+      this.scratchpad = document.createElement('canvas');
+      this.scratchpad_context = this.scratchpad.getContext('2d');     // A hidden canvas for re-sizing the real canvas to be square.
+      this.scratchpad.width   = 256;
+      this.scratchpad.height  = 256;
+      this.texture = new Texture ( context.gl, "", false, false );        // Initial image source: Blank gif file
+      this.texture.image.src = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
+
+      //create and submit shapes
         const shapes = { 'box': new Cube(),
                          'rounded_cylinder': new Rounded_Capped_Cylinder(100,50),
                          'cylinder': new Capped_Cylinder(2,12),
@@ -75,9 +74,15 @@ class Vending_Machine extends Scene_Component
         this.use_mipMap = true;
 
         this.materials = {
+          //implement transparency with glass by manipulating alpha level
+          glass: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 0.25), { ambient: 0, diffusivity: 1 } ),
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
+          yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
+
+          shadow: context.get_instance(Phong_Shader).material( Color.of( 0, 0, 0,1 ),
+                             { ambient: 1, texture: this.texture } ),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -106,12 +111,37 @@ class Vending_Machine extends Scene_Component
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } )
         }
 
-        this.timer;
-        this.queue = [];
-        this.curr = 0;
+        this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' ),
+                  vending: new Audio('assets/sounds/vending.wav'),
+                  drop: new Audio('assets/sounds/drop.wav'),
+                  shake: new Audio('assets/sounds/shake.mp3'),
+                  hum: new Audio('assets/sounds/hum.wav')
+              }
+
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
-        this.liftFlap = false;
-        this.flapAngle = 0;
+
+//     context.globals.graphics_state.camera_transform =  Mat4.look_at( Vec.of(0,10,6), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ).times(Mat4.translation(Vec.of(0,0,.5)));
+
+        this.row = -1;
+        this.column = -1;
+        this.trackMatrixArray = [];
+        this.materialsMatrix = [];
+        this.itemxPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
+        this.itemyPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
+        this.gatexPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
+                                    [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
+        this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
         this.lrshakeTimer;
         this.lrshake = [];
         this.lrcurrentShake = 0;
@@ -122,16 +152,16 @@ class Vending_Machine extends Scene_Component
         this.press = [];
         this.currentPress = -1;
         this.buttonTransformations = [ //the ordering is weird I don't care
-          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //E
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
-          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
-          Mat4.translation(Vec.of(2.8125,        3.25,          5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
-          Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
-          Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
-          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.8)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
+          Mat4.translation(Vec.of(2.8125,        3.25 - 4*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //E
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25,          5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //1
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - .375,   5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //2
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 2*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //3
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 3*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //4
+          Mat4.translation(Vec.of(2.8125 + .375, 3.25 - 4*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //5
+          Mat4.translation(Vec.of(2.8125,        3.25,          5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //A
+          Mat4.translation(Vec.of(2.8125,        3.25 - .375,   5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //B
+          Mat4.translation(Vec.of(2.8125,        3.25 - 2*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125))), //C
+          Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
         ];
         this.buttonTextures = [
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE
@@ -155,18 +185,45 @@ class Vending_Machine extends Scene_Component
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/whiteD.png", true)}), //whiteD
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD
         ];
-        this.textures = [];//fill with texture maps
-        //create array for each button's transformations
-        //also need member variables to implement button pushing
+        this.pressed = [false, false, false, false, false, false, false, false, false, false];
       }
 
+   //helper function to implement sound
+  play_sound( name, volume = 1 )
+    { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
+      this.sounds[ name ].currentTime = 0;
+      this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
+      this.sounds[ name ].play();
+    }
+
+   //helper function to implement sound
+  pause_sound( name, volume = 1 )
+    { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
+      this.sounds[ name ].currentTime = 0;
+      this.sounds[ name ].pause();
+    }
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
+      this.live_string(box => {box.textContent = "TIME:" /* + this.whateverVariableUsedToTrackRemaingTime*/});
+      this.new_line();
+
+
+      this.live_string(box => {box.textContent = "Command" /*replace "Command" with this.whateverVariableUsedToTrackCommands*/});
+      this.new_line();
+
+
+      this.live_string(box => {box.textContent = "SCORE:" /* + this.whateverVariableUsedToTrackScore*/});
+      this.new_line();
+
+
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
         this.lrshake.unshift(1);
       });
       this.key_triggered_button("Shake Right", ["l"], () => {
         this.lrshake.unshift(-1);
       });
+      this.new_line();
+
+
       this.key_triggered_button("Shake Forward", ["i"], () => {
         this.fbshake.unshift(-1);
       });
@@ -175,51 +232,141 @@ class Vending_Machine extends Scene_Component
       });
       this.new_line();
 
-      //this.key_triggered_button("Lift Flap", ["l"], () => {
-      //  this.liftFlap = !this.liftFlap;
-      //});
-      //when a user presses these buttons, it corresponds with pressing a button on the vending machine
-      //the button could light up and/or depress
-      //this would use the same queue as the shaking mechanism, each button press in queue prompts button animation
+
+      //pressing buttons on the vending machine
+      this.key_triggered_button("A", ["a"], ()=>{
+        this.press.unshift(6);
+        this.row = 0;
+        this.play_sound("button");
+      });
       this.key_triggered_button("1", ["1"], ()=>{
         this.press.unshift(1);
-      });
-      this.key_triggered_button("2", ["2"], ()=>{
-        this.press.unshift(2);
-      });
-      this.key_triggered_button("3", ["3"], ()=>{
-        this.press.unshift(3);
-      });
-      this.key_triggered_button("4", ["4"], ()=>{
-        this.press.unshift(4);
-      });
-      this.key_triggered_button("5", ["5"], ()=>{
-        this.press.unshift(5);
+        this.column = 0;
+        this.play_sound("button");
       });
       this.new_line();
 
-      this.key_triggered_button("A", ["6"], ()=>{
-        this.press.unshift(6);
-      });
-      this.key_triggered_button("B", ["7"], ()=>{
+
+      this.key_triggered_button("B", ["b"], ()=>{
         this.press.unshift(7);
+        this.row = 1;
+        this.play_sound("button");
+
       });
-      this.key_triggered_button("C", ["8"], ()=>{
+      this.key_triggered_button("2", ["2"], ()=>{
+        this.press.unshift(2);
+        this.column = 1;
+        this.play_sound("button");
+      });
+      this.new_line();
+
+
+      this.key_triggered_button("C", ["c"], ()=>{
         this.press.unshift(8);
+        this.row = 2;
+        this.play_sound("button");
       });
-      this.key_triggered_button("D", ["9"], ()=>{
+      this.key_triggered_button("3", ["3"], ()=>{
+        this.press.unshift(3);
+        this.column = 2;
+        this.play_sound("button");
+      });
+      this.new_line();
+
+
+      this.key_triggered_button("D", ["d"], ()=>{
         this.press.unshift(9);
+        this.row = 3;
+        this.play_sound("button");
       });
-      this.key_triggered_button("E", ["0"], ()=>{
+      this.key_triggered_button("4", ["4"], ()=>{
+        this.press.unshift(4);
+        this.column = 3;
+        this.play_sound("button");
+      });
+      this.new_line();
+
+
+      this.key_triggered_button("E", ["e"], ()=>{
         this.press.unshift(0);
+        this.row = 0;
+        this.play_sound("button");
       });
+      this.key_triggered_button("5", ["5"], ()=>{
+        this.press.unshift(5);
+        this.column = 4;
+        this.play_sound("button");
+      });
+      this.new_line();
+      this.new_line();
+      //shadow image
+      this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ),
+                { style:"width:200px; height:" + 200 * this.aspect_ratio + "px" } ) );
     }
+
+    vend_item(graphics_state, vm_transform, t, dt)
+    {
+
+      // GATES
+      for (let i = 0; i < 5; i++)
+      {
+        for (let j = 0; j < 4; j++)
+        {
+            // this if statement is where it gets hard
+            // its responsible for moving the lane and having the item fall
+            if (this.row == i && this.column == j)
+            {
+                  // change front back position
+                  if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
+                  {
+                        for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
+                        {
+                              this.itemxPositionMatrix[i][j][2-n] += 1;
+                              this.play_sound("vending");
+                              this.gatexPositionMatrix[i][j][2-n] += 1;
+                              if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                              {
+                                    this.gatexPositionMatrix[i][j][2-n] = 0;
+                              }
+                        }
+                  }
+                  else
+                  {
+                        this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                        this.itemTimesPressedMatrix[i][j] += 1;
+                        this.row = -1;
+                        this.column = -1;
+
+                  }
+
+            }
+
+            for (let k = 0; k < 3; k++)
+            {
+                  if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
+                  {
+                        this.itemyPositionMatrix[i][j][k] += 1/20;
+                        this.itemyPositionMatrix[i][j][k] *= 1.1;
+                  }
+                  //gates for vending machine items
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+
+                  //vending machine items
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
+            }
+        }
+      }
+      //this.scorekeeper.score +=1;
+    }
+
 
     display( graphics_state ){
       const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
       graphics_state.lights = this.lights;
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
+
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
       //left and right
       if (this.lrcurrentShake === 0){
@@ -227,8 +374,13 @@ class Vending_Machine extends Scene_Component
           this.lrcurrentShake = this.lrshake.pop();
           this.lrshakeTimer = 0; //resets timer
         }
+
+        if(this.fbcurrentShake=== 0)
+            this.pause_sound("shake");
+
       }
       if (this.lrcurrentShake !== 0){
+        this.play_sound("shake");
         if (this.lrshakeTimer === 20){
           this.lrcurrentShake = 0;
         }
@@ -243,8 +395,12 @@ class Vending_Machine extends Scene_Component
           this.fbcurrentShake = this.fbshake.pop();
           this.fbshakeTimer = 0; //resets timer
         }
+        if(this.lrcurrentShake=== 0)
+            this.pause_sound("shake");
+
       }
       if (this.fbcurrentShake !== 0){
+        this.play_sound("shake");
         if (this.fbshakeTimer === 20){
           this.fbcurrentShake = 0;
         }
@@ -260,13 +416,13 @@ class Vending_Machine extends Scene_Component
         if (this.press.length){
           this.currentPress = this.press.pop();
           this.pressTimer = 0;
-          //switch materials
+          this.pressed[this.currentPress] = true;
         }
       }
       if (this.currentPress !== -1){
         if (this.pressTimer === 20){
+          this.pressed[this.currentPress] = false;
           this.currentPress = -1;
-          //revert materials
         }
         else if (this.pressTimer < 10){
           this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,-.1)));
@@ -277,6 +433,15 @@ class Vending_Machine extends Scene_Component
           this.pressTimer++;
         }
       }
+
+
+
+      //draw the shadow (scene from vantage point of the light)
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,1,25))).times(Mat4.scale(Vec.of(4,3,0))), this.materials.vending_machine);
+      this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
+      this.texture.image.src = this.result_img.src = this.scratchpad.toDataURL("image/png");
+								// Clear the canvas and start over, beginning scene 2:
+      this.webgl_manager.gl.clear( this.webgl_manager.gl.COLOR_BUFFER_BIT | this.webgl_manager.gl.DEPTH_BUFFER_BIT);
 
       //drawing all the things
       //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
@@ -329,24 +494,21 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-0.25,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-2,2))).times(Mat4.scale(Vec.of(4, 0.05, 2.5))), this.materials.vending_machine);
 
-      // GATES
-      for (let i = 0; i < 5; i++)
-      {
-        for (let j = 0; j < 4; j++)
-        {
-          for (let k = 0; k < 3; k++)
-          {
-            this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2,i*1.75-1.75,4.5-k*1.4))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-          }
-        }
-      }
+      this.materialsMatrix = [[this.materials.cheerios, this.materials.frosted, this.materials.trix, this.materials.rice],
+                              [this.materials.cinnamon, this.materials.lucky, this.materials.pops, this.materials.cocoapuffs],
+                              [this.materials.crunch, this.materials.raisin, this.materials.cookie, this.materials.specialk],
+                              [this.materials.pocky, this.materials.greentea, this.materials.strawberry, this.materials.banana],
+                              [this.materials.wheat, this.materials.motts, this.materials.cheese, this.materials.pop]]
+
+
+      this.vend_item(graphics_state, vm_transform, t, dt);
 
       //this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-.5,1.6,3.3))).times(Mat4.scale(Vec.of(2.8,5,1))), this.materials.white); //window, need to make it transparent
       //I'm pretty sure we'll have to reconstruct the vending machine out of multiple squares instead of a cube to implement the window and door
       this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3.1,3.75,3.3))).times(Mat4.scale(Vec.of(.5,.25,1))), this.materials.white); //screen
       for (let i = 0; i < 10; i++){
-        //this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.buttonTextures[2 * i]);
-        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), this.materials.white);
+        this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), (this.pressed[i] ? this.buttonTextures[2 * i + 1] : this.buttonTextures[2 * i]));
+        //this.shapes.box.draw(graphics_state, vm_transform.times(this.buttonTransformations[i]), (this.pressed[i] ? this.materials.yellow : this.materials.white));
       }
 
       //door in progress
@@ -358,98 +520,12 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,10,6))).times(Mat4.scale(Vec.of(.5,.5,.5))), this.materials.white.override({ambient:1})); //light "bulb"
       this.shapes.box.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(0,11.5,6))).times(Mat4.scale(Vec.of(.1,1,.1))), this.materials.black); //"string" that light hangs from
 
+//shadow
+//        this.shapes.square.draw(graphics_state, vm_transform
+//        .times(Mat4.scale(Vec.of(12,12,0)))
+//        .times(Mat4.translation(Vec.of(5,0,0))), this.materials.shadow);
 
-
-      //creating VISIBLE cereal boxes
-      //first layer
-      //row 1
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       //row 2
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cinnamon);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.lucky);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pops);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cocoapuffs);
-
-              //row 3
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.crunch);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.raisin);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cookie);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 2.3, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.specialk);
-              //row 4
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pocky);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70,0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.greentea);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.strawberry);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 0.6, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.banana);
-
-              //row 5
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.wheat);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.motts);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheese);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 4)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pop);
-
-      //second layer
-      //row 1
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       //row 2
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cinnamon);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.lucky);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pops);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cocoapuffs);
-
-              //row 3
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.crunch);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.raisin);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cookie);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 2.3, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.specialk);
-              //row 4
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pocky);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70,0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.greentea);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.strawberry);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 0.6, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.banana);
-
-              //row 5
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.wheat);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.motts);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheese);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 2)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pop);
-
-      //third layer
-            //row 1
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheerios);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.frosted);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.trix);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 5.8, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.rice);
-       //row 2
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cinnamon);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.lucky);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pops);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 4, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cocoapuffs);
-
-              //row 3
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.crunch);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.raisin);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cookie);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 2.3, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.specialk);
-              //row 4
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, 0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pocky);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70,0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.greentea);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, 0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.strawberry);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, 0.6, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.banana);
-
-              //row 5
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-3.2, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.wheat);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-1.70, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.motts);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(-0.2, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.cheese);
-       this.shapes.square.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(1.3, -1.25, 1)).times(Mat4.scale(Vec.of(0.5,0.7,1)))), this.materials.pop);
-
- //this.shapes.rounded_cylinder.draw(graphics_state, Mat4.identity().times(Mat4.translation(Vec.of(15,0,0))).times(Mat4.rotation(Math.PI*0.5, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(-5,0,0))).times(Mat4.scale(Vec.of(0.2,1,1))), this.materials.black);
-
-
+//transparent glass
+      this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.1))), this.materials.glass);
     }
   }
