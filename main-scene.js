@@ -318,10 +318,10 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("Shake Forward", ["i"], () => {
-        this.fbshake.unshift(-1);
+        this.fbshake.unshift(1);
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
-        this.fbshake.unshift(1);
+        this.fbshake.unshift(-1);
       });
       this.new_line();
 
