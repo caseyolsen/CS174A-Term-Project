@@ -1,3 +1,101 @@
+window.Shadow_Shader = window.classes.Shadow_Shader =
+class Shadow_Shader extends Phong_Shader
+{
+      material( color, properties ) // Define an internal class "Material" that stores the standard settings found in Phong lighting.
+      { return new class Material // Possible properties: ambient, diffusivity, specularity, smoothness, gouraud, texture.
+      { constructor( shader, color = Color.of( 0,0,0,1 ), ambient = 0, diffusivity = 1, specularity = 1, smoothness = 40, shadow = undefined )
+      { Object.assign( this, { shader, color, ambient, diffusivity, specularity, smoothness, shadow } ); // Assign defaults.
+      Object.assign( this, properties ); // Optionally override defaults.
+      }
+      override( properties ) // Easily make temporary overridden versions of a base material, such as
+      { const copied = new this.constructor(); // of a different color or diffusivity. Use "opacity" to override only that.
+      Object.assign( copied, this );
+      Object.assign( copied, properties );
+      copied.color = copied.color.copy();
+      if( properties[ "opacity" ] != undefined ) copied.color[3] = properties[ "opacity" ];
+      return copied;
+      }
+      }( this, color );
+      }
+      update_GPU( g_state, model_transform, material, gpu = this.g_addrs, gl = this.gl )
+      { // First, send the matrices to the GPU, additionally cache-ing some products of them we know we'll need:
+      this.update_matrices( g_state, model_transform, gpu, gl );
+      gl.uniform1f ( gpu.animation_time_loc, g_state.animation_time / 1000 );
+
+      if( g_state.gouraud === undefined ) { g_state.gouraud = g_state.color_normals = false; } // Keep the flags seen by the shader 
+      gl.uniform1i( gpu.GOURAUD_loc, g_state.gouraud || material.gouraud ); // program up-to-date and make sure 
+      gl.uniform1i( gpu.COLOR_NORMALS_loc, g_state.color_normals ); // they are declared.
+
+      const textures = [];
+      let textureIndex = 0;
+
+      // set the shadow for Phong Shader
+      if (material.shadow ) 
+      { 
+            gpu.shader_attributes["tex_coord"].enabled = true;
+            g_state.shadow = true;
+
+            // gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, material.shadow.id);
+            textures.push(material.shadow.id);
+            //gl.bindTexture( gl.TEXTURE_2D, material.shadow.id );
+
+            gl.uniform1i(gpu.shadow_loc, textureIndex++); // texture unit 0
+      }
+      else 
+      { 
+            g_state.shadow = false; 
+      }
+
+      gl.uniform1i( gpu.SHADOW_loc, g_state.shadow);
+      gl.uniform4fv( gpu.shapeColor_loc, material.color ); // Send the desired shape-wide material qualities 
+      gl.uniform1f ( gpu.ambient_loc, material.ambient ); // to the graphics card, where they will tweak the
+      gl.uniform1f ( gpu.diffusivity_loc, material.diffusivity ); // Phong lighting formula.
+      gl.uniform1f ( gpu.specularity_loc, material.specularity );
+      gl.uniform1f ( gpu.smoothness_loc, material.smoothness );
+
+      if( material.texture ) // NOTE: To signal not to draw a texture, omit the texture parameter from Materials.
+      { 
+            gpu.shader_attributes["tex_coord"].enabled = true;
+            gl.uniform1f ( gpu.USE_TEXTURE_loc, 1 );
+            gl.bindTexture(gl.TEXTURE_2D, material.texture.id);
+            textures.push(material.texture.id);
+            window.gl = gl;
+            gl.uniform1i(gpu.texture_loc, textureIndex);
+
+      }
+      else 
+      { 
+            gl.uniform1f ( gpu.USE_TEXTURE_loc, 0 ); gpu.shader_attributes["tex_coord"].enabled = false; 
+      }
+
+      textureIndex = 0;
+
+      if (material.shadow) { //implemented to take the shadow image
+            gl.activeTexture(gl.TEXTURE0 + textureIndex);
+            gl.bindTexture(gl.TEXTURE_2D, textures[textureIndex++]);
+      }
+
+      if (material.texture) {
+            gl.activeTexture(gl.TEXTURE0 + textureIndex);
+            gl.bindTexture(gl.TEXTURE_2D, textures[textureIndex]);
+      }
+
+      if( !g_state.lights.length ) return;
+      var lightPositions_flattened = [], lightColors_flattened = [], lightAttenuations_flattened = [];
+      for( var i = 0; i < 4 * g_state.lights.length; i++ )
+      { 
+            lightPositions_flattened .push( g_state.lights[ Math.floor(i/4) ].position[i%4] );
+            lightColors_flattened .push( g_state.lights[ Math.floor(i/4) ].color[i%4] );
+            lightAttenuations_flattened[ Math.floor(i/4) ] = g_state.lights[ Math.floor(i/4) ].attenuation;
+      }
+      gl.uniform4fv( gpu.lightPosition_loc, lightPositions_flattened );
+      gl.uniform4fv( gpu.lightColor_loc, lightColors_flattened );
+      gl.uniform1fv( gpu.attenuation_factor_loc, lightAttenuations_flattened );
+      }
+}
+
+
 window.Cube = window.classes.Cube =
 class Cube extends Shape    // A cube inserts six square strips into its arrays.
 { constructor()  
@@ -12,39 +110,6 @@ class Cube extends Shape    // A cube inserts six square strips into its arrays.
     }
 }
 
-window.Cube_Outline = window.classes.Cube_Outline =
-class Cube_Outline extends Shape
-  { constructor()
-      { super( "positions", "colors" ); // Name the values we'll define per each vertex.
-
-        //  DONE (Requirement 5).
-                                // When a set of lines is used in graphics, you should think of the list entries as
-                                // broken down into pairs; each pair of vertices will be drawn as a line segment.
-
-        this.positions.push(...Vec.cast([-1,-1,-1], [-1,-1,1], [-1,-1,-1], [-1,1,-1], [-1,-1,-1], [1,-1,-1],
-                                        [1,1,-1],   [1,1,1],   [1,1,-1],   [1,-1,-1], [1,1,-1],   [-1,1,-1],
-                                        [-1,1,1],   [-1,1,-1], [-1,1,1],   [-1,-1,1], [-1,1,1],   [1,1,1],
-                                        [1,-1,1],   [1,-1,-1], [1,-1,1],   [1,1,1],   [1,-1,1],   [-1,-1,1]));
-        for(let i = 0; i<24; i++){this.colors.push(Color.of(1,1,1,1))};
-        this.indexed = false;       // Do this so we won't need to define "this.indices".
-      }
-  }
-
-window.Cube_Single_Strip = window.classes.Cube_Single_Strip =
-class Cube_Single_Strip extends Shape
-  { constructor()
-      { super( "positions", "normals" );
-
-        // TODO (Extra credit part I)
-        this.positions.push(...Vec.cast([-1,-1,-1], [1,-1,-1], [-1,-1,1], [1,-1,1], [1,1,-1],  [-1,1,-1],  [1,1,1],  [-1,1,1],
-                                          [-1,-1,-1], [-1,-1,1], [-1,1,-1], [-1,1,1], [1,-1,1],  [1,-1,-1],  [1,1,1],  [1,1,-1],
-                                          [-1,-1,1],  [1,-1,1],  [-1,1,1],  [1,1,1], [1,-1,-1], [-1,-1,-1], [1,1,-1], [-1,1,-1]));
-        this.normals.push(...Vec.cast( [0,-1,0], [0,-1,0], [0,-1,0], [0,-1,0], [0,1,0], [0,1,0], [0,1,0], [0,1,0], [-1,0,0], [-1,0,0],
-                                          [-1,0,0], [-1,0,0], [1,0,0],  [1,0,0],  [1,0,0], [1,0,0], [0,0,1], [0,0,1], [0,0,1],   [0,0,1],
-                                          [0,0,-1], [0,0,-1], [0,0,-1], [0,0,-1]));
-        this.indices.push();
-      }
-  }
 
 window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
@@ -81,8 +146,7 @@ class Vending_Machine extends Scene_Component
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
 
-          shadow: context.get_instance(Phong_Shader).material( Color.of( 0, 0, 0,1 ), 
-                             { ambient: 1, texture: this.texture } ),
+          vm_shadow: context.get_instance( Shadow_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3, shadow: this.texture } ),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -115,15 +179,19 @@ class Vending_Machine extends Scene_Component
                   vending: new Audio('assets/sounds/vending.wav'),
                   drop: new Audio('assets/sounds/drop.wav'),
                   shake: new Audio('assets/sounds/shake.mp3'),
-                  hum: new Audio('assets/sounds/hum.wav')
+                  hum: new Audio('assets/sounds/hum.wav'),
+                  sigh: new Audio('assets/sounds/sigh.wav')
               }
 
         this.timer;
         this.queue = [];
         this.curr = 0;
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
-
+//vantage point of light above vending machine
 //     context.globals.graphics_state.camera_transform =  Mat4.look_at( Vec.of(0,10,6), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ).times(Mat4.translation(Vec.of(0,0,.5)));
+
+//vantage point of light above snacks in vending machine
+//     context.globals.graphics_state.camera_transform =  Mat4.look_at( Vec.of(-1,6.6,2.5), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ).times(Mat4.translation(Vec.of(0,0,.5)));
 
         this.row = -1;
         this.column = -1;
@@ -319,7 +387,7 @@ class Vending_Machine extends Scene_Component
                   }
                   else
                   {
-                        this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+//                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
                         this.itemTimesPressedMatrix[i][j] += 1;
                         this.row = -1;
                         this.column = -1;
@@ -334,6 +402,10 @@ class Vending_Machine extends Scene_Component
                   {
                         this.itemyPositionMatrix[i][j][k] += 1/20;
                         this.itemyPositionMatrix[i][j][k] *= 1.1;
+                  }
+                  if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
+                  {
+                        this.play_sound("drop"); //need to fix this so the drop sound isn't too early
                   }
                   //gates for vending machine items
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
@@ -352,6 +424,9 @@ class Vending_Machine extends Scene_Component
       graphics_state.lights = this.lights;
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
+
+      
+//       this.play_sound("hum");
 
       //the following code handles the user shaking the vending machine. A queue stores all the shake commands and they are executed one by one
       //left and right
@@ -436,25 +511,25 @@ class Vending_Machine extends Scene_Component
       let thiccness = 0.2;
 
       //back:
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vm_shadow);
       //right side
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vm_shadow);
       // left side
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vm_shadow);
       // top
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vm_shadow);
       // bottom
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vm_shadow);
       //light in machine
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,6.6,2.5))).times(Mat4.scale(Vec.of(2, 0.03, 3))), this.materials.white.override({ambient:1}));
       // front bottom bottom
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-6,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-6,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vm_shadow);
       // front bottom top
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-3,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-3,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vm_shadow);
       // front right
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3,0,5.5))).times(Mat4.scale(Vec.of(1, 6.9, thiccness))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3,0,5.5))).times(Mat4.scale(Vec.of(1, 6.9, thiccness))), this.materials.vm_shadow);
       // inside divider
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.1, 0,2.5))).times(Mat4.scale(Vec.of(thiccness, 6.9, 3))), this.materials.vending_machine);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.1, 0,2.5))).times(Mat4.scale(Vec.of(thiccness, 6.9, 3))), this.materials.vm_shadow);
 
       // FLAP
       //if (!this.liftFlap)
