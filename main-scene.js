@@ -208,12 +208,9 @@ class Vending_Machine extends Scene_Component
           cheese: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheeseit.jpg", true ) } ),
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } ),
           walls: context.get_instance( Phong_Shader ).material( Color.of(205.0/255, 235.0/255, 249.0/255, 1), { ambient: .7, diffusivity: 0.3} ),
-          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}),
-                
-                text_image: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), 
-        { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance( "assets/floor.jpg" ) } )
+          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}) 
+          }
 
-        }
 
         this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' ),
                   vending: new Audio('assets/sounds/vending.wav'),
@@ -275,7 +272,7 @@ class Vending_Machine extends Scene_Component
           Mat4.translation(Vec.of(2.8125,        3.25 - 3*.375, 5.675)).times(Mat4.scale(Vec.of(.125,.125,.125)))  //D
         ];
         this.buttonTextures = [
-          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE 
+          context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/whiteE.png", true)}), //whiteE
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellowE.png", true)}), //yellowE
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/white1.png", true)}), //white1
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.9, texture:context.get_instance("assets/buttons/yellow1.png", true)}), //yellow1
@@ -299,20 +296,23 @@ class Vending_Machine extends Scene_Component
         this.pressed = [false, false, false, false, false, false, false, false, false, false];
 
         this.score = 0;
-        this.gameTimer = 60.0;
+        this.gameTimer = 100.0;
         this.prompts = [
           "Get A1", "Get A2", "Get A3", "Get A4", //0, 1, 2, 3
           "Get B1", "Get B2", "Get B3", "Get B4", //4, 5, 6, 7
           "Get C1", "Get C2", "Get C3", "Get C4", //8, 9, 10, 11
           "Get D1", "Get D2", "Get D3", "Get D4", //12, 13, 14, 15
           "Get E1", "Get E2", "Get E3", "Get E4", //16, 17, 18, 19
-          "Item Stuck!", "Wrong Move!", //20, 21
-          "Shake Right", "Shake Left", //22, 23
-          "Shake Forward", "Shake Backwards", //24, 25
-          "Begin", "Game Over" //26, 27
+          "Wrong Move! 5 Second Penalty!", //20
+          "Shake Right", "Shake Left", //21, 22
+          "Shake Forward", "Shake Backwards", //23, 24
+          "Game Over", "Press P to Play" //25, 26
         ];
-        this.currentPrompt = this.prompts[26];
         this.inProgress = false;
+        this.needPrompt = true;
+        this.promptNum = 26;
+        this.stuck = false;
+        this.vending = false;
       }
 
    //helper function to implement sound
@@ -329,7 +329,8 @@ class Vending_Machine extends Scene_Component
       this.sounds[ name ].currentTime = 0;
       this.sounds[ name ].pause();
     }
-    make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
+ 
+     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
       //can modify formatting if necessary
       this.live_string(box => {box.textContent = "TIME:" + this.gameTimer});
       this.new_line();
@@ -343,93 +344,134 @@ class Vending_Machine extends Scene_Component
       this.new_line();
 
 
-      this.key_triggered_button("Play/Pause", ["p"], () =>{
+      this.live_string(box => {
+        let rows = ['E', 'D', 'C', 'B', 'A'], cols = ['1', '2', '3', '4', '5'], r, c;
+
+        if (this.row <= 4 && this.row >= 0){
+          r = rows[this.row];
+        }else{
+          r = '-';
+        }
+        if (this.column <= 4 && this.column >= 0){
+          c = cols[this.column];
+        }else{
+          c = '-';
+        }
+        box.textContent = "SELECTION:" + r + c;
+      });
+      this.new_line();
+
+
+      this.key_triggered_button("Pause/Play", ["p"], () =>{
         this.inProgress = !this.inProgress;
       });
       this.new_line();
 
 
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
-        this.lrshake.unshift(1);
+        if(this.inProgress)
+          this.lrshake.unshift(1);
       });
       this.key_triggered_button("Shake Right", ["l"], () => {
-        this.lrshake.unshift(-1);
+        if(this.inProgress)
+          this.lrshake.unshift(-1);
       });
       this.new_line();
 
 
       this.key_triggered_button("Shake Forward", ["i"], () => {
-        this.fbshake.unshift(1);
+        if(this.inProgress)
+          this.fbshake.unshift(1);
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
-        this.fbshake.unshift(-1);
+        if(this.inProgress)
+          this.fbshake.unshift(-1);
       });
       this.new_line();
 
 
       //pressing buttons on the vending machine
       this.key_triggered_button("A", ["a"], ()=>{
-        this.press.unshift(6);
-        this.row = 4;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(6);
+          this.row = 4;
+          this.play_sound("button");
+        }
       });
       this.key_triggered_button("1", ["1"], ()=>{
-        this.press.unshift(1);
-        this.column = 0;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(1);
+          this.column = 0;
+          this.play_sound("button");
+        }
       });
       this.new_line();
 
 
       this.key_triggered_button("B", ["b"], ()=>{
-        this.press.unshift(7);
-        this.row = 3;
-        this.play_sound("button");
-
+        if(this.inProgress){
+          this.press.unshift(7);
+          this.row = 3;
+          this.play_sound("button");
+        }
       });
       this.key_triggered_button("2", ["2"], ()=>{
-        this.press.unshift(2);
-        this.column = 1;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(2);
+          this.column = 1;
+          this.play_sound("button");
+        }
       });
       this.new_line();
 
 
       this.key_triggered_button("C", ["c"], ()=>{
-        this.press.unshift(8);
-        this.row = 2;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(8);
+          this.row = 2;
+          this.play_sound("button");
+        }
       });
       this.key_triggered_button("3", ["3"], ()=>{
-        this.press.unshift(3);
-        this.column = 2;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(3);
+          this.column = 2;
+          this.play_sound("button");
+        }
       });
       this.new_line();
 
 
       this.key_triggered_button("D", ["d"], ()=>{
-        this.press.unshift(9);
-        this.row = 1;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(9);
+          this.row = 1;
+          this.play_sound("button");
+        }
       });
       this.key_triggered_button("4", ["4"], ()=>{
-        this.press.unshift(4);
-        this.column = 3;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(4);
+          this.column = 3;
+          this.play_sound("button");
+        }
       });
       this.new_line();
 
 
       this.key_triggered_button("E", ["e"], ()=>{
-        this.press.unshift(0);
-        this.row = 0;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(0);
+          this.row = 0;
+          this.play_sound("button");
+        }
       });
       this.key_triggered_button("5", ["5"], ()=>{
-        this.press.unshift(5);
-        this.column = 4;
-        this.play_sound("button");
+        if(this.inProgress){
+          this.press.unshift(5);
+          this.column = 4;
+          this.play_sound("button");
+        }
       });
       this.new_line();
       this.new_line();
@@ -437,7 +479,6 @@ class Vending_Machine extends Scene_Component
       this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ),
                 { style:"width:200px; height:" + 200 * this.aspect_ratio + "px" } ) );
     }
-
     vend_item(graphics_state, vm_transform, t, dt)
     {
 
@@ -450,6 +491,18 @@ class Vending_Machine extends Scene_Component
             // its responsible for moving the lane and having the item fall
             if (this.row == i && this.column == j)
             {
+              //rewards user if they vend the right item, punishes them otherwise
+              if (this.promptNum === 4 * (4 - i) + j){
+                if (!this.vending){
+                this.score++;
+              }
+              }else{
+                if (!this.vending){
+                  this.promptNum = 20;
+                  this.gameTimer -= 5;
+                }
+              }
+              this.vending = true;
                   // change front back position
                   if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
                   {
@@ -470,7 +523,8 @@ class Vending_Machine extends Scene_Component
                         this.itemTimesPressedMatrix[i][j] += 1;
                         this.row = -1;
                         this.column = -1;
-
+                        this.vending = false;
+                        this.needPrompt = true;
                   }
 
             }
@@ -481,18 +535,18 @@ class Vending_Machine extends Scene_Component
                   {
                         this.itemyPositionMatrix[i][j][k] += 1/20;
                         this.itemyPositionMatrix[i][j][k] *= 1.1;
-                        
+
                         if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
                         {
                               this.play_sound("drop"); //need to fix this so the drop sound isn't too early
                         }
-                        
+
                   }
                   if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
                   {
                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
                   }
-                  
+
 
             //vending machine labels
             this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.07, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*j+2]);
@@ -505,8 +559,8 @@ class Vending_Machine extends Scene_Component
             //labels text
 //             this.shapes.text.set_string( this.labelMatrix[i][j] );
 //             this.shapes.text.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.3, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.125, 0.025))), this.materials.text_image);
-                 
-                  //vending machine shelves                                            
+
+                  //vending machine shelves
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                   //vending machine items
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
@@ -523,6 +577,20 @@ class Vending_Machine extends Scene_Component
       let model_transform = Mat4.identity(); //used for the setting (walls, floor)
       let vm_transform = Mat4.identity(); //used for everything that makes up the vending machine
 
+      if (this.inProgress){
+        if(this.needPrompt){
+          if(this.stuck){
+            this.promptNum = 20 + Math.ceil(4 * Math.random());
+            this.needPrompt = false;
+          } else{
+             this.promptNum = Math.floor(20 * Math.random());
+            this.needPrompt = false;
+          }
+        }
+        this.currentPrompt = this.prompts[this.promptNum];
+      } else{
+        this.currentPrompt = this.prompts[26];
+      }
 
 //       this.play_sound("hum");
 
@@ -703,6 +771,7 @@ class Vending_Machine extends Scene_Component
       if (this.gameTimer <= 0){
         this.inProgress = false;
         this.gameTimer = 0;
+        this.currentPrompt = this.prompts[25];
       }
 
     }
