@@ -80,7 +80,7 @@ class Vending_Machine extends Scene_Component
           yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
 
-          shadow: context.get_instance(Phong_Shader).material( Color.of( 0, 0, 0,1 ), 
+          shadow: context.get_instance(Phong_Shader).material( Color.of( 0, 0, 0,1 ),
                              { ambient: 1, texture: this.texture } ),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
@@ -110,19 +110,12 @@ class Vending_Machine extends Scene_Component
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } )
         }
 
-<<<<<<< HEAD
-        this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' )
-=======
         this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' ),
                   vending: new Audio('assets/sounds/vending.wav'),
                   drop: new Audio('assets/sounds/drop.wav'),
                   shake: new Audio('assets/sounds/shake.mp3')
->>>>>>> a1023dc6896183c4f203a7a789156ec1bb2e7f45
               }
 
-        this.timer;
-        this.queue = [];
-        this.curr = 0;
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
 
 //     context.globals.graphics_state.camera_transform =  Mat4.look_at( Vec.of(0,10,6), Vec.of( 0,0,0 ), Vec.of( 0,1,0 ) ).times(Mat4.translation(Vec.of(0,0,.5)));
@@ -191,9 +184,6 @@ class Vending_Machine extends Scene_Component
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD
         ];
         this.pressed = [false, false, false, false, false, false, false, false, false, false];
-        //fill with texture maps
-        //create array for each button's transformations
-        //also need member variables to implement button pushing
       }
 
    //helper function to implement sound
@@ -211,6 +201,18 @@ class Vending_Machine extends Scene_Component
       this.sounds[ name ].pause();
     }
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
+      this.live_string(box => {box.textContent = "TIME:" /* + this.whateverVariableUsedToTrackRemaingTime*/});
+      this.new_line();
+
+
+      this.live_string(box => {box.textContent = "Command" /*replace "Command" with this.whateverVariableUsedToTrackCommands*/});
+      this.new_line();
+
+
+      this.live_string(box => {box.textContent = "SCORE:" /* + this.whateverVariableUsedToTrackScore*/});
+      this.new_line();
+
+
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
         this.lrshake.unshift(1);
       });
@@ -227,7 +229,7 @@ class Vending_Machine extends Scene_Component
         this.fbshake.unshift(1);
       });
       this.new_line();
-      this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ), 
+      this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ),
                 { style:"width:200px; height:" + 200 * this.aspect_ratio + "px" } ) );
 
 
@@ -343,7 +345,7 @@ class Vending_Machine extends Scene_Component
                   }
                   //gates for vending machine items
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75-this.itemyPositionMatrix[i][j][k], 4.5-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                  
+
                   //vending machine items
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
@@ -385,7 +387,7 @@ class Vending_Machine extends Scene_Component
       if (this.fbcurrentShake === 0){
         if (this.fbshake.length){ //checks that we don't try to pop the empty queue
           this.fbcurrentShake = this.fbshake.pop();
-          this.fbshakeTimer = 0; //resets timer        
+          this.fbshakeTimer = 0; //resets timer
         }
         if(this.lrcurrentShake=== 0)
             this.pause_sound("shake");

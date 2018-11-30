@@ -576,7 +576,7 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
                       ".canvas-widget table.control-box td * { background:transparent }",
                       ".canvas-widget table.control-box .control-div td { border-radius:unset }",
                       ".canvas-widget table.control-box .control-title { padding:7px 40px; color:white; background:DarkSlateGray; box-shadow: 25px 0px 70px -15px inset black }",
-                      ".canvas-widget *.live_string { display:inline-block; background:unset }",
+                      ".canvas-widget *.live_string { display:inline-block; background:unset; font-weight: bold; font-size: 18pt}",
                       ".dropdown { display:inline-block }",
                       ".dropdown-content { display:inline-block; transition:.2s; transform: scaleY(0); overflow:hidden; position: absolute; \
                                             z-index: 1; background:#E8F6FF; padding: 16px; margin-left:30px; min-width: 100px; \
