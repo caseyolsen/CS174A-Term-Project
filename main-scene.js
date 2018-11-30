@@ -298,14 +298,14 @@ class Vending_Machine extends Scene_Component
         this.pressed = [false, false, false, false, false, false, false, false, false, false];
 
         this.score = 0;
-        this.gameTimer = 10.0;
+        this.gameTimer = 100.0;
         this.prompts = [
           "Get A1", "Get A2", "Get A3", "Get A4", //0, 1, 2, 3
           "Get B1", "Get B2", "Get B3", "Get B4", //4, 5, 6, 7
           "Get C1", "Get C2", "Get C3", "Get C4", //8, 9, 10, 11
           "Get D1", "Get D2", "Get D3", "Get D4", //12, 13, 14, 15
           "Get E1", "Get E2", "Get E3", "Get E4", //16, 17, 18, 19
-          "Wrong Move!", //20
+          "Wrong Move! 5 Second Penalty!", //20
           "Shake Right", "Shake Left", //21, 22
           "Shake Forward", "Shake Backwards", //23, 24
           "Game Over", "Press P to Play" //25, 26
@@ -314,6 +314,7 @@ class Vending_Machine extends Scene_Component
         this.needPrompt = true;
         this.promptNum = 26;
         this.stuck = false;
+        this.vending = false;
       }
 
    //helper function to implement sound
@@ -492,6 +493,18 @@ class Vending_Machine extends Scene_Component
             // its responsible for moving the lane and having the item fall
             if (this.row == i && this.column == j)
             {
+              //rewards user if they vend the right item, punishes them otherwise
+              if (this.promptNum === 4 * (4 - i) + j){
+                if (!this.vending){
+                this.score++;
+              }
+              }else{
+                if (!this.vending){
+                  this.promptNum = 20;
+                  this.gameTimer -= 5;
+                }
+              }
+              this.vending = true;
                   // change front back position
                   if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
                   {
@@ -512,7 +525,8 @@ class Vending_Machine extends Scene_Component
                         this.itemTimesPressedMatrix[i][j] += 1;
                         this.row = -1;
                         this.column = -1;
-
+                        this.vending = false;
+                        this.needPrompt = true;
                   }
 
             }
