@@ -50,8 +50,7 @@ window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        //if( !context.globals.has_controls   )
-        //  context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
+        //context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
         const r = context.width/context.height;
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
@@ -142,12 +141,15 @@ class Vending_Machine extends Scene_Component
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
         this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+
         this.lrshakeTimer;
         this.lrshake = [];
         this.lrcurrentShake = 0;
+
         this.fbshakeTimer;
         this.fbshake = [];
         this.fbcurrentShake = 0;
+
         this.pressTimer;
         this.press = [];
         this.currentPress = -1;
@@ -186,6 +188,22 @@ class Vending_Machine extends Scene_Component
           context.get_instance(Phong_Shader).material(Color.of(0,0,0,1), {ambient:0.7, texture:context.get_instance("assets/buttons/yellowD.png", true)}), //yellowD
         ];
         this.pressed = [false, false, false, false, false, false, false, false, false, false];
+
+        this.score = 0;
+        this.gameTimer = 60.0;
+        this.prompts = [
+          "Get A1", "Get A2", "Get A3", "Get A4", //0, 1, 2, 3
+          "Get B1", "Get B2", "Get B3", "Get B4", //4, 5, 6, 7
+          "Get C1", "Get C2", "Get C3", "Get C4", //8, 9, 10, 11
+          "Get D1", "Get D2", "Get D3", "Get D4", //12, 13, 14, 15
+          "Get E1", "Get E2", "Get E3", "Get E4", //16, 17, 18, 19
+          "Item Stuck!", "Wrong Move!", //20, 21
+          "Shake Right", "Shake Left", //22, 23
+          "Shake Forward", "Shake Backwards", //24, 25
+          "Begin", "Game Over" //26, 27
+        ];
+        this.currentPrompt = this.prompts[26];
+        this.inProgress = false;
       }
 
    //helper function to implement sound
@@ -203,15 +221,22 @@ class Vending_Machine extends Scene_Component
       this.sounds[ name ].pause();
     }
     make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
-      this.live_string(box => {box.textContent = "TIME:" /* + this.whateverVariableUsedToTrackRemaingTime*/});
+      //can modify formatting if necessary
+      this.live_string(box => {box.textContent = "TIME:" + this.gameTimer});
       this.new_line();
 
 
-      this.live_string(box => {box.textContent = "Command" /*replace "Command" with this.whateverVariableUsedToTrackCommands*/});
+      this.live_string(box => {box.textContent = this.currentPrompt});
       this.new_line();
 
 
-      this.live_string(box => {box.textContent = "SCORE:" /* + this.whateverVariableUsedToTrackScore*/});
+      this.live_string(box => {box.textContent = "SCORE:" + this.score});
+      this.new_line();
+
+
+      this.key_triggered_button("Pause/Play", ["p"], () =>{
+        this.inProgress = !this.inProgress;
+      });
       this.new_line();
 
 
@@ -527,5 +552,10 @@ class Vending_Machine extends Scene_Component
 
 //transparent glass
       this.shapes.square.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.1))), this.materials.glass);
+      if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
+      if (this.gameTimer <= 0){
+        this.inProgress = false;
+        this.gameTimer = 0;
+      }
     }
   }
