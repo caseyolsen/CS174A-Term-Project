@@ -166,6 +166,8 @@ class Vending_Machine extends Scene_Component
                          'rounded_cylinder': new Rounded_Capped_Cylinder(100,50),
                          'cylinder': new Capped_Cylinder(2,12),
                        'square': new Square(), 
+                       'plant': new Shape_From_File( "/assets/houseplant.obj" ),
+                       'chair': new Shape_From_File("/assets/chair.obj"),
                        'text': new Text_Line( 2 )}
         this.submit_shapes( context, shapes );
         this.use_mipMap = true;
@@ -177,8 +179,8 @@ class Vending_Machine extends Scene_Component
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .8, diffusivity: .3 } ),
           yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
-
           vm_shadow: context.get_instance( Shadow_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3, shadow: this.texture } ),
+          chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 1, 1, 1), {ambient: 0.2, diffusivity: .3, texture: context.get_instance("assets/floor.jpg")}),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -206,12 +208,11 @@ class Vending_Machine extends Scene_Component
           cheese: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheeseit.jpg", true ) } ),
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } ),
           walls: context.get_instance( Phong_Shader ).material( Color.of(205.0/255, 235.0/255, 249.0/255, 1), { ambient: .7, diffusivity: 0.3} ),
-          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg"),
+          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}),
                 
                 text_image: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), 
         { ambient: 1, diffusivity: 0, specularity: 0, texture: context.get_instance( "assets/floor.jpg" ) } )
 
-         } )
         }
 
         this.sounds = { button: new Audio('assets/sounds/buttonclick.mp3' ),
@@ -342,7 +343,7 @@ class Vending_Machine extends Scene_Component
       this.new_line();
 
 
-      this.key_triggered_button("Pause/Play", ["p"], () =>{
+      this.key_triggered_button("Play/Pause", ["p"], () =>{
         this.inProgress = !this.inProgress;
       });
       this.new_line();
@@ -608,23 +609,23 @@ class Vending_Machine extends Scene_Component
       let thiccness = 0.2;
 
       //back:
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vending_machine);
       //right side
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
       // left side
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-4,0,2.5))).times(Mat4.scale(Vec.of(thiccness, 7, 3))), this.materials.vending_machine);
       // top
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
       // bottom
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,-6.8,2.5))).times(Mat4.scale(Vec.of(4, thiccness, 3))), this.materials.vending_machine);
       //light in machine
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,6.6,2.5))).times(Mat4.scale(Vec.of(2, 0.03, 3))), this.materials.white.override({ambient:1}));
       // front bottom bottom
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-6,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-6,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
       // front bottom top
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-3,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-1,-3,5.5))).times(Mat4.scale(Vec.of(3, 0.7, thiccness))), this.materials.vending_machine);
       // front right
-      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3,0,5.5))).times(Mat4.scale(Vec.of(1, 6.9, thiccness))), this.materials.vm_shadow);
+      this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(3,0,5.5))).times(Mat4.scale(Vec.of(1, 6.9, thiccness))), this.materials.vending_machine);
       // inside divider
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(2.1, 0,2.5))).times(Mat4.scale(Vec.of(thiccness, 6.9, 3))), this.materials.vm_shadow);
 
@@ -691,10 +692,18 @@ class Vending_Machine extends Scene_Component
 
 //transparent glass
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.2))), this.materials.glass);
+  
+      //PLANT
+      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.5,1.5,1.5))), this.materials.black);
+      //chair
+      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 4))).times(Mat4.scale(Vec.of(2,2,2))), this.materials.chair);
+
+
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
         this.inProgress = false;
         this.gameTimer = 0;
       }
+
     }
   }
