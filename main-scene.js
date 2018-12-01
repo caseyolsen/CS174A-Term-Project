@@ -255,6 +255,7 @@ class Vending_Machine extends Scene_Component
         this.stuckChance = 1;
         this.hasShaken = false;
         this.columnEntered = false;
+        this.stuckItemRotation;
 
         this.lrshakeTimer;
         this.lrshake = [];
@@ -602,7 +603,7 @@ class Vending_Machine extends Scene_Component
             this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.07, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*j+2]);
             if(i!=0)
                   this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.33, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*(5-i)+10]);
-               else //row E
+            else //row E
                   this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.33, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*i]);
 
 
@@ -610,10 +611,14 @@ class Vending_Machine extends Scene_Component
 //             this.shapes.text.set_string( this.labelMatrix[i][j] );
 //             this.shapes.text.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.3, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.125, 0.025))), this.materials.text_image);
 
-                  //vending machine shelves
-                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                  //vending machine items
+            //vending machine gates
+            this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+
+            //vending machine items
+            if (!this.stuck || this.itemxPositionMatrix[i][j][k] < 14*(k + 1) || (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75)))
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
+            else
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))).times(Mat4.rotation(Math.PI / 12, Vec.of(0,0,1))), this.materialsMatrix[i][j]);
             }
         }
       }
