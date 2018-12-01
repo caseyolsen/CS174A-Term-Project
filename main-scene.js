@@ -399,7 +399,7 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("Shake Forward", ["i"], () => {
         if(this.inProgress)
-          this.fbshake.unshift(1);
+          this.fbshake.unshift(-1);
         if(this.promptNum == 23)
         {
             this.stuck = false;
@@ -408,7 +408,7 @@ class Vending_Machine extends Scene_Component
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
         if(this.inProgress)
-          this.fbshake.unshift(-1);
+          this.fbshake.unshift(1);
         if(this.promptNum == 24)
         {
             this.stuck = false;
@@ -672,11 +672,11 @@ class Vending_Machine extends Scene_Component
       }
       if (this.lrcurrentShake !== 0){
         this.play_sound("shake");
-        if (this.lrshakeTimer === 20){
+        if (this.lrshakeTimer === 10){
           this.lrcurrentShake = 0;
         }
         else {
-          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
+          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/10)/6, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
           this.lrshakeTimer++;
         }
       }
@@ -692,12 +692,12 @@ class Vending_Machine extends Scene_Component
       }
       if (this.fbcurrentShake !== 0){
         this.play_sound("shake");
-        if (this.fbshakeTimer === 20){
+        if (this.fbshakeTimer === 10){
           this.fbcurrentShake = 0;
         }
         else {
           //need to calculate this
-          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/20)/4, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
+          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/10)/6, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
           this.fbshakeTimer++;
         }
       }
