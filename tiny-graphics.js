@@ -471,12 +471,10 @@ class Webgl_Manager      // This class manages a whole graphics program for one 
         || w.mozRequestAnimationFrame || w.oRequestAnimationFrame || w.msRequestAnimationFrame
         || function( callback, element ) { w.setTimeout(callback, 1000/60);  } )( window );
     }
-  set_size( dimensions = [ 720, 600 ] )                // This function allows you to re-size the canvas anytime.
+  set_size( dimensions = [ 1200, 1000 ] )                // This function allows you to re-size the canvas anytime.
     { const [ width, height ] = dimensions;             // To work, it must change the size in CSS, wait for style to re-flow,
-      //this.canvas.style[ "width" ]  =  width + "px";    // and then change the size in canvas attributes.
-      //this.canvas.style[ "height" ] = height + "px";
-      this.canvas.style["width"] = width + "px";
-      this.canvas.style["height"] = height + "px";
+      this.canvas.style[ "width" ]  =  width + "px";    // and then change the size in canvas attributes.
+      this.canvas.style[ "height" ] = height + "px";
       Object.assign( this,        { width, height } );   // Have to assign to both; these attributes on a canvas
       Object.assign( this.canvas, { width, height } );   // have a special effect on buffers, separate from their style.
       this.gl.viewport( 0, 0, width, height );           // Build the canvas's matrix for converting -1 to 1 ranged coords (NCDS)
@@ -515,7 +513,7 @@ class Scene_Component       // The Scene_Component superclass is the base class 
              event.stopPropagation();   // Don't bubble the event to parent nodes; let child elements be targetted in isolation.
            }
       Object.assign( this, { key_controls: new Keyboard_Manager( document, callback_behavior), globals: webgl_manager.globals } );
-      control_box.appendChild( Object.assign( document.createElement("div"), { textContent: this.constructor.name, className: "control-title" } ) )
+      //control_box.appendChild( Object.assign( document.createElement("div"), { textContent: this.constructor.name, className: "control-title" } ) )
       this.control_panel = control_box.appendChild( document.createElement( "div" ) );
       this.control_panel.className = "control-div";
     }
@@ -525,7 +523,7 @@ class Scene_Component       // The Scene_Component superclass is the base class 
                                                         // elements made this way.
       parent.appendChild( Object.assign( document.createElement( "div"  ), { className:"live_string", onload: callback } ) );
     }
-  key_triggered_button( description, shortcut_combination, callback, color = '#'+Math.random().toString(9).slice(-6),
+  key_triggered_button( description, shortcut_combination, callback, color = '#72B2D1',
                         release_event, recipient = this, parent = this.control_panel )      // Trigger any scene behavior by assigning a key
     { const button = parent.appendChild( document.createElement( "button" ) );              // shortcut and a labelled HTML button to it.
       button.default_color = button.style.backgroundColor = color;
@@ -566,19 +564,19 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
 { constructor( element, scenes, show_controls = true )   // One panel exists per each scene that's used in the canvas.  You can use up
     { this.create( element, scenes, show_controls )      // to 16 Canvas_Widgets; browsers support up to 16 WebGL contexts per page.
 
-      const rules = [ ".canvas-widget { width: 1080; background: DimGray }",
-                      ".canvas-widget * { font-family: monospace }",
-                      ".canvas-widget canvas { width: 720px; height: 600px; margin-bottom:-3px; float: left}",
+      const rules = [ ".canvas-widget { width: 1800px; background: white }",
+                      ".canvas-widget * { font-family: monospace; font-size: 20px }",
+                      ".canvas-widget canvas { width: 1200px; height: 1000px; margin-bottom:-3px; float: left}",
                       ".canvas-widget div { background: white }",
                       ".canvas-widget table { border-collapse: collapse; display:block; overflow-x: auto; }",
-                      ".canvas-widget table.control-box { width: 360px; border:0; margin:0; height:600px; transition:.5s; overflow-y:scroll; background:DimGray; float: left }",
-                      ".canvas-widget table.control-box:hover { max-height:600px }",
-                      ".canvas-widget table.control-box td { overflow:hidden; border:0; background:DimGray; border-radius:30px }",
-                      ".canvas-widget table.control-box td .control-div { background: #EEEEEE; height:600px; padding: 5px 5px 5px 30px; box-shadow: 25px 0px 60px -15px inset }",
+                      ".canvas-widget table.control-box { width: 600px; border:0; margin:0; height:1000px; transition:.5s; overflow-y:scroll; background:#EEEEEE; float: left }",
+                      ".canvas-widget table.control-box:hover { max-height:1000px }",
+                      ".canvas-widget table.control-box td { overflow:hidden; border:0; background:#EEEEEE}",
+                      ".canvas-widget table.control-box td .control-div { background: #EEEEEE; height:1000px; padding: 5px 5px 5px 30px}",
                       ".canvas-widget table.control-box td * { background:transparent }",
                       ".canvas-widget table.control-box .control-div td { border-radius:unset }",
                       ".canvas-widget table.control-box .control-title { padding:7px 40px; color:white; background:DarkSlateGray; box-shadow: 25px 0px 70px -15px inset black }",
-                      ".canvas-widget *.live_string { display:inline-block; background:unset; font-weight: bold; font-size: 18pt}",
+                      ".canvas-widget *.live_string { display:inline-block; background:unset; font-weight: bold; font-size: 30pt}",
                       ".dropdown { display:inline-block }",
                       ".dropdown-content { display:inline-block; transition:.2s; transform: scaleY(0); overflow:hidden; position: absolute; \
                                             z-index: 1; background:#E8F6FF; padding: 16px; margin-left:30px; min-width: 100px; \
