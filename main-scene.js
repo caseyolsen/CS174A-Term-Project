@@ -168,6 +168,8 @@ class Vending_Machine extends Scene_Component
                        'square': new Square(),
                        'plant': new Shape_From_File( "/assets/houseplant.obj" ),
                        'chair': new Shape_From_File("/assets/chair.obj"),
+//                        'pot': new Shape_From_File("/assets/pot.obj"),
+                        'leaf': new Shape_From_File("/assets/leaves.obj"),
                        'text': new Text_Line( 2 )}
         this.submit_shapes( context, shapes );
         this.use_mipMap = true;
@@ -177,10 +179,17 @@ class Vending_Machine extends Scene_Component
           glass: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 0.25), { ambient: 0, diffusivity: 1 } ),
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .8, diffusivity: .3 } ),
+          green: context.get_instance( Fake_Bump_Map ).material( Color.of(58/255, 95/255, 11/255, 1), { ambient: .3, diffusivity: .3 } ),
+
           yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
           vm_shadow: context.get_instance( Shadow_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3, shadow: this.texture } ),
+<<<<<<< HEAD
           chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 1, 1, 1), {ambient: 0.2, diffusivity: .3, texture: context.get_instance("assets/floor.jpg")}),
+=======
+          chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 0, 0, 1), {ambient: 0.3, diffusivity: .3,texture: context.get_instance("assets/bambootexture.jpg")}),
+          plant: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 100/255, 0, 1), {ambient: 0.3, diffusivity: .3, shadow: this.texture}),
+>>>>>>> 6fd815ffac5dbd3e47fb7983e7b933769f8f07f6
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -208,7 +217,11 @@ class Vending_Machine extends Scene_Component
           cheese: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheeseit.jpg", true ) } ),
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } ),
           walls: context.get_instance( Phong_Shader ).material( Color.of(205.0/255, 235.0/255, 249.0/255, 1), { ambient: .7, diffusivity: 0.3} ),
+<<<<<<< HEAD
           floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")})
+=======
+          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: 0, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}) 
+>>>>>>> 6fd815ffac5dbd3e47fb7983e7b933769f8f07f6
           }
 
 
@@ -247,6 +260,9 @@ class Vending_Machine extends Scene_Component
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
         this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.stuckChance = 1;
+        this.hasShaken = false;
+        this.columnEntered = false;
 
         this.lrshakeTimer;
         this.lrshake = [];
@@ -371,10 +387,20 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
         if(this.inProgress)
           this.lrshake.unshift(1);
+        if(this.promptNum == 22)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.key_triggered_button("Shake Right", ["l"], () => {
         if(this.inProgress)
           this.lrshake.unshift(-1);
+        if(this.promptNum == 21)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.new_line();
 
@@ -382,10 +408,20 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Forward", ["i"], () => {
         if(this.inProgress)
           this.fbshake.unshift(1);
+        if(this.promptNum == 23)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
         if(this.inProgress)
           this.fbshake.unshift(-1);
+        if(this.promptNum == 24)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.new_line();
 
@@ -403,6 +439,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(1);
           this.column = 0;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -420,6 +457,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(2);
           this.column = 1;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -437,6 +475,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(3);
           this.column = 2;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -454,6 +493,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(4);
           this.column = 3;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -471,6 +511,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(5);
           this.column = 4;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -487,65 +528,82 @@ class Vending_Machine extends Scene_Component
       {
         for (let j = 0; j < 4; j++)
         {
-            // this if statement is where it gets hard
-            // its responsible for moving the lane and having the item fall
-            if (this.row == i && this.column == j)
-            {
-              //rewards user if they vend the right item, punishes them otherwise
-              if (this.promptNum === 4 * (4 - i) + j){
-                if (!this.vending){
-                this.score++;
-              }
-              }else{
-                if (!this.vending){
-                  this.promptNum = 20;
-                  this.gameTimer -= 5;
-                }
-              }
-              this.vending = true;
-                  // change front back position
-                  if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
+                  // this if statement is where it gets hard
+                  // its responsible for moving the lane and having the item fall
+                 if (this.row == i && this.column == j)
+                 {
+                    //this.stuckChance = parseInt(Math.random() * 5);
+                    //rewards user if they vend the right item, punishes them otherwise
+                    if (this.promptNum === 4 * (4 - i) + j){
+                      if (!this.vending){
+                      this.score++;
+                    }
+                  }else{
+                      if (!this.vending){
+                        this.promptNum = 20;
+                        this.gameTimer -= 5;
+                      }
+                  }
+                  if (!this.stuck)
                   {
-                        for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
+                        this.vending = true;
+                        // change front back position
+                        if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
                         {
-                              this.itemxPositionMatrix[i][j][2-n] += 1;
-                              this.play_sound("vending");
-                              this.gatexPositionMatrix[i][j][2-n] += 1;
-                              if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                              for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
                               {
-                                    this.gatexPositionMatrix[i][j][2-n] = 0;
+                                    this.itemxPositionMatrix[i][j][2-n] += 1;
+                                    this.play_sound("vending");
+                                    this.gatexPositionMatrix[i][j][2-n] += 1;
+                                    if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                                    {
+                                          this.gatexPositionMatrix[i][j][2-n] = 0;
+                                    }
                               }
                         }
-                  }
-                  else
-                  {
-//                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                        this.itemTimesPressedMatrix[i][j] += 1;
-                        this.row = -1;
-                        this.column = -1;
-                        this.vending = false;
-                        this.needPrompt = true;
+                        else
+                        {
+      //                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                              this.itemTimesPressedMatrix[i][j] += 1;
+                              this.row = -1;
+                              this.column = -1;
+                              this.vending = false;
+                              this.needPrompt = true;
+                        }
                   }
 
             }
 
             for (let k = 0; k < 3; k++)
             {
-                  if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
+                  if (!this.stuck)
                   {
-                        this.itemyPositionMatrix[i][j][k] += 1/20;
-                        this.itemyPositionMatrix[i][j][k] *= 1.1;
-
-                        if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
+                        if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
                         {
-                              this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                        }
+                              if (this.stuckChance != 3)
+                              {
+                                    this.itemyPositionMatrix[i][j][k] += 1/20;
+                                    this.itemyPositionMatrix[i][j][k] *= 1.1;
 
+                                    if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
+                                    {
+                                          this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                                    }
+                              }
+                              else
+                              {
+                                    this.stuck = true;
+                                    //this.promptNum = 21;
+                                    this.stuckChance = 0;
+                                    this.needPrompt = true;
+                              }
+
+                        }
                   }
-                  if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
-                  {
-                        this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                  }
+                  //if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
+                  //{
+                  //      this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                  //}
 
 
             //vending machine labels
@@ -563,13 +621,17 @@ class Vending_Machine extends Scene_Component
                   //vending machine shelves
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                   //vending machine items
-                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
             }
         }
       }
       //this.scorekeeper.score +=1;
     }
 
+    stuck_helper()
+    {
+          this.stuckChance = parseInt(Math.random() * 5);
+    }
 
     display( graphics_state ){
       const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
@@ -762,9 +824,12 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.2))), this.materials.glass);
      
       //PLANT
-      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.5,1.5,1.5))), this.materials.black);
+      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.4,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.6,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+
       //chair
-      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 4))).times(Mat4.scale(Vec.of(2,2,2))), this.materials.chair);
+      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
 
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
