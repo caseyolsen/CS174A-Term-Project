@@ -401,7 +401,7 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Forward", ["i"], () => {
         if(this.inProgress)
           this.fbshake.unshift(-1);
-        if(this.promptNum == 23)
+        if(this.promptNum == 24)
         {
             this.stuck = false;
             this.needPrompt = true;
@@ -410,7 +410,7 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Backwards", ["k"], () => {
         if(this.inProgress)
           this.fbshake.unshift(1);
-        if(this.promptNum == 24)
+        if(this.promptNum == 23)
         {
             this.stuck = false;
             this.needPrompt = true;
