@@ -767,12 +767,12 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.2))), this.materials.glass);
   
       //PLANT
-      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
-      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.4,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
-      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.6,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.2555,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.1,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.3,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
 
       //chair
-      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
+      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -3.708, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
 
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
