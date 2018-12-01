@@ -341,7 +341,7 @@ class Vending_Machine extends Scene_Component
 
      make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
       //can modify formatting if necessary
-      this.live_string(box => {box.textContent = "TIME:" + this.gameTimer});
+      this.live_string(box => {box.textContent = "Time: " + this.gameTimer});
       this.new_line();
 
 
@@ -349,7 +349,7 @@ class Vending_Machine extends Scene_Component
       this.new_line();
 
 
-      this.live_string(box => {box.textContent = "SCORE:" + this.score});
+      this.live_string(box => {box.textContent = "Score: " + this.score});
       this.new_line();
 
 
@@ -366,7 +366,7 @@ class Vending_Machine extends Scene_Component
         }else{
           c = '-';
         }
-        box.textContent = "SELECTION:" + r + c;
+        box.textContent = "Selection: " + r + c;
       });
       this.new_line();
 
