@@ -471,10 +471,12 @@ class Webgl_Manager      // This class manages a whole graphics program for one 
         || w.mozRequestAnimationFrame || w.oRequestAnimationFrame || w.msRequestAnimationFrame
         || function( callback, element ) { w.setTimeout(callback, 1000/60);  } )( window );
     }
-  set_size( dimensions = [ 1080, 600 ] )                // This function allows you to re-size the canvas anytime.
+  set_size( dimensions = [ 720, 600 ] )                // This function allows you to re-size the canvas anytime.
     { const [ width, height ] = dimensions;             // To work, it must change the size in CSS, wait for style to re-flow,
-      this.canvas.style[ "width" ]  =  width + "px";    // and then change the size in canvas attributes.
-      this.canvas.style[ "height" ] = height + "px";
+      //this.canvas.style[ "width" ]  =  width + "px";    // and then change the size in canvas attributes.
+      //this.canvas.style[ "height" ] = height + "px";
+      this.canvas.style["width"] = width + "px";
+      this.canvas.style["height"] = height + "px";
       Object.assign( this,        { width, height } );   // Have to assign to both; these attributes on a canvas
       Object.assign( this.canvas, { width, height } );   // have a special effect on buffers, separate from their style.
       this.gl.viewport( 0, 0, width, height );           // Build the canvas's matrix for converting -1 to 1 ranged coords (NCDS)
@@ -564,15 +566,15 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
 { constructor( element, scenes, show_controls = true )   // One panel exists per each scene that's used in the canvas.  You can use up
     { this.create( element, scenes, show_controls )      // to 16 Canvas_Widgets; browsers support up to 16 WebGL contexts per page.
 
-      const rules = [ ".canvas-widget { width: 1080px; background: DimGray }",
+      const rules = [ ".canvas-widget { width: 1080; background: DimGray }",
                       ".canvas-widget * { font-family: monospace }",
-                      ".canvas-widget canvas { width: 1080px; height: 600px; margin-bottom:-3px }",
+                      ".canvas-widget canvas { width: 720px; height: 600px; margin-bottom:-3px; float: left}",
                       ".canvas-widget div { background: white }",
                       ".canvas-widget table { border-collapse: collapse; display:block; overflow-x: auto; }",
-                      ".canvas-widget table.control-box { width: 1080px; border:0; margin:0; max-height:380px; transition:.5s; overflow-y:scroll; background:DimGray }",
-                      ".canvas-widget table.control-box:hover { max-height:500px }",
+                      ".canvas-widget table.control-box { width: 360px; border:0; margin:0; height:600px; transition:.5s; overflow-y:scroll; background:DimGray; float: left }",
+                      ".canvas-widget table.control-box:hover { max-height:600px }",
                       ".canvas-widget table.control-box td { overflow:hidden; border:0; background:DimGray; border-radius:30px }",
-                      ".canvas-widget table.control-box td .control-div { background: #EEEEEE; height:338px; padding: 5px 5px 5px 30px; box-shadow: 25px 0px 60px -15px inset }",
+                      ".canvas-widget table.control-box td .control-div { background: #EEEEEE; height:600px; padding: 5px 5px 5px 30px; box-shadow: 25px 0px 60px -15px inset }",
                       ".canvas-widget table.control-box td * { background:transparent }",
                       ".canvas-widget table.control-box .control-div td { border-radius:unset }",
                       ".canvas-widget table.control-box .control-title { padding:7px 40px; color:white; background:DarkSlateGray; box-shadow: 25px 0px 70px -15px inset black }",
@@ -664,7 +666,7 @@ class Code_Widget
                                                   border-radius:12px; box-shadow: 20px 20px 90px 0px powderblue inset, 5px 5px 30px 0px blue inset }",
                 ".code-widget .code-display { min-width:1800px; padding:10px; white-space:pre-wrap; background:transparent }",
                 ".code-widget .edit-button { left:800px; z-index:2; position:absolute; outline:0; height:80px; width:80px; border-radius:50% }",
-                ".code-widget table { display:block; overflow-x:auto; width:1080px; border-radius:25px; border-collapse:collapse; border: 2px solid black }",
+                ".code-widget table { display:block; overflow-x:auto; width:38%; border-radius:25px; border-collapse:collapse; border: 2px solid black }",
                ".code-widget table.class-list td { border-width:thin; background: #EEEEEE; padding:12px; font-family:monospace; border: 1px solid black }"
                  ];
 
