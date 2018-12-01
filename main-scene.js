@@ -554,7 +554,6 @@ class Vending_Machine extends Scene_Component
                         }
                         else
                         {
-      //                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
                               this.itemTimesPressedMatrix[i][j] += 1;
                               this.row = -1;
                               this.column = -1;
@@ -615,8 +614,11 @@ class Vending_Machine extends Scene_Component
             //vending machine items
             if (!this.stuck || this.itemxPositionMatrix[i][j][k] < 14*(k + 1) || (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75)))
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
-            else
-                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))).times(Mat4.rotation(Math.PI / 12, Vec.of(0,0,1))), this.materialsMatrix[i][j]);
+            else { //item gets stuck
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.rotation(Math.PI / 12, Vec.of(0,0,1))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
+                  this.play_sound("vending");
+            }
+            
             }
         }
       }
