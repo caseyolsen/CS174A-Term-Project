@@ -247,6 +247,9 @@ class Vending_Machine extends Scene_Component
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
                                     [[0,0,0], [0,0,0], [0,0,0], [0,0,0]]];
         this.itemTimesPressedMatrix = [[0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0], [0,0,0,0]];
+        this.stuckChance = 1;
+        this.hasShaken = false;
+        this.columnEntered = false;
 
         this.lrshakeTimer;
         this.lrshake = [];
@@ -371,10 +374,20 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
         if(this.inProgress)
           this.lrshake.unshift(1);
+        if(this.promptNum == 22)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.key_triggered_button("Shake Right", ["l"], () => {
         if(this.inProgress)
           this.lrshake.unshift(-1);
+        if(this.promptNum == 21)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.new_line();
 
@@ -382,10 +395,20 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("Shake Forward", ["i"], () => {
         if(this.inProgress)
           this.fbshake.unshift(1);
+        if(this.promptNum == 23)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
         if(this.inProgress)
           this.fbshake.unshift(-1);
+        if(this.promptNum == 24)
+        {
+            this.stuck = false;
+            this.needPrompt = true;
+        }
       });
       this.new_line();
 
@@ -403,6 +426,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(1);
           this.column = 0;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -420,6 +444,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(2);
           this.column = 1;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -437,6 +462,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(3);
           this.column = 2;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -454,6 +480,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(4);
           this.column = 3;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -471,6 +498,7 @@ class Vending_Machine extends Scene_Component
           this.press.unshift(5);
           this.column = 4;
           this.play_sound("button");
+          this.stuck_helper();
         }
       });
       this.new_line();
@@ -487,65 +515,82 @@ class Vending_Machine extends Scene_Component
       {
         for (let j = 0; j < 4; j++)
         {
-            // this if statement is where it gets hard
-            // its responsible for moving the lane and having the item fall
-            if (this.row == i && this.column == j)
-            {
-              //rewards user if they vend the right item, punishes them otherwise
-              if (this.promptNum === 4 * (4 - i) + j){
-                if (!this.vending){
-                this.score++;
-              }
-              }else{
-                if (!this.vending){
-                  this.promptNum = 20;
-                  this.gameTimer -= 5;
-                }
-              }
-              this.vending = true;
-                  // change front back position
-                  if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
+                  // this if statement is where it gets hard
+                  // its responsible for moving the lane and having the item fall
+                 if (this.row == i && this.column == j)
+                 {
+                    //this.stuckChance = parseInt(Math.random() * 5);
+                    //rewards user if they vend the right item, punishes them otherwise
+                    if (this.promptNum === 4 * (4 - i) + j){
+                      if (!this.vending){
+                      this.score++;
+                    }
+                  }else{
+                      if (!this.vending){
+                        this.promptNum = 20;
+                        this.gameTimer -= 5;
+                      }
+                  }
+                  if (!this.stuck)
                   {
-                        for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
+                        this.vending = true;
+                        // change front back position
+                        if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
                         {
-                              this.itemxPositionMatrix[i][j][2-n] += 1;
-                              this.play_sound("vending");
-                              this.gatexPositionMatrix[i][j][2-n] += 1;
-                              if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                              for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
                               {
-                                    this.gatexPositionMatrix[i][j][2-n] = 0;
+                                    this.itemxPositionMatrix[i][j][2-n] += 1;
+                                    this.play_sound("vending");
+                                    this.gatexPositionMatrix[i][j][2-n] += 1;
+                                    if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                                    {
+                                          this.gatexPositionMatrix[i][j][2-n] = 0;
+                                    }
                               }
                         }
-                  }
-                  else
-                  {
-//                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                        this.itemTimesPressedMatrix[i][j] += 1;
-                        this.row = -1;
-                        this.column = -1;
-                        this.vending = false;
-                        this.needPrompt = true;
+                        else
+                        {
+      //                         this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                              this.itemTimesPressedMatrix[i][j] += 1;
+                              this.row = -1;
+                              this.column = -1;
+                              this.vending = false;
+                              this.needPrompt = true;
+                        }
                   }
 
             }
 
             for (let k = 0; k < 3; k++)
             {
-                  if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
+                  if (!this.stuck)
                   {
-                        this.itemyPositionMatrix[i][j][k] += 1/20;
-                        this.itemyPositionMatrix[i][j][k] *= 1.1;
-
-                        if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
+                        if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
                         {
-                              this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                        }
+                              if (this.stuckChance != 3)
+                              {
+                                    this.itemyPositionMatrix[i][j][k] += 1/20;
+                                    this.itemyPositionMatrix[i][j][k] *= 1.1;
 
+                                    if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
+                                    {
+                                          this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                                    }
+                              }
+                              else
+                              {
+                                    this.stuck = true;
+                                    //this.promptNum = 21;
+                                    this.stuckChance = 0;
+                                    this.needPrompt = true;
+                              }
+
+                        }
                   }
-                  if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
-                  {
-                        this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                  }
+                  //if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
+                  //{
+                  //      this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                  //}
 
 
             //vending machine labels
@@ -563,13 +608,17 @@ class Vending_Machine extends Scene_Component
                   //vending machine shelves
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
                   //vending machine items
-                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
             }
         }
       }
       //this.scorekeeper.score +=1;
     }
 
+    stuck_helper()
+    {
+          this.stuckChance = parseInt(Math.random() * 5);
+    }
 
     display( graphics_state ){
       const t = graphics_state.animation_time / 1000, dt = graphics_state.animation_delta_time / 1000;
