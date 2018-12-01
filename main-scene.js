@@ -146,8 +146,8 @@ window.Vending_Machine = window.classes.Vending_Machine =
 class Vending_Machine extends Scene_Component
   { constructor( context, control_box )     // The scene begins by requesting the camera, shapes, and materials it will need.
       { super(   context, control_box );    // First, include a secondary Scene that provides movement controls:
-        if( !context.globals.has_controls   )
-          context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
+        //if( !context.globals.has_controls   )
+          //context.register_scene_component( new Movement_Controls( context, control_box.parentElement.insertCell() ) );
         const r = context.width/context.height;
         context.globals.graphics_state.    camera_transform = Mat4.translation([ 0,-1,-30 ]);  // Locate the camera here (inverted matrix).
         context.globals.graphics_state.projection_transform = Mat4.perspective( Math.PI/4, r, .1, 1000 );
@@ -184,12 +184,8 @@ class Vending_Machine extends Scene_Component
           yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
           vm_shadow: context.get_instance( Shadow_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3, shadow: this.texture } ),
-<<<<<<< HEAD
-          chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 1, 1, 1), {ambient: 0.2, diffusivity: .3, texture: context.get_instance("assets/floor.jpg")}),
-=======
           chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 0, 0, 1), {ambient: 0.3, diffusivity: .3,texture: context.get_instance("assets/bambootexture.jpg")}),
           plant: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 100/255, 0, 1), {ambient: 0.3, diffusivity: .3, shadow: this.texture}),
->>>>>>> 6fd815ffac5dbd3e47fb7983e7b933769f8f07f6
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -217,11 +213,7 @@ class Vending_Machine extends Scene_Component
           cheese: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheeseit.jpg", true ) } ),
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } ),
           walls: context.get_instance( Phong_Shader ).material( Color.of(205.0/255, 235.0/255, 249.0/255, 1), { ambient: .7, diffusivity: 0.3} ),
-<<<<<<< HEAD
-          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")})
-=======
-          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: 0, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}) 
->>>>>>> 6fd815ffac5dbd3e47fb7983e7b933769f8f07f6
+          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: 0, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")})
           }
 
 
@@ -312,7 +304,7 @@ class Vending_Machine extends Scene_Component
         this.pressed = [false, false, false, false, false, false, false, false, false, false];
 
         this.score = 0;
-        this.gameTimer = 100.0;
+        this.gameTimer = 60.0;
         this.prompts = [
           "Get A1", "Get A2", "Get A3", "Get A4", //0, 1, 2, 3
           "Get B1", "Get B2", "Get B3", "Get B4", //4, 5, 6, 7
@@ -645,7 +637,17 @@ class Vending_Machine extends Scene_Component
             this.promptNum = 20 + Math.ceil(4 * Math.random());
             this.needPrompt = false;
           } else{
-             this.promptNum = Math.floor(20 * Math.random());
+            this.promptNum = -1;
+            while (this.promptNum < 0){
+              while (true){
+                let r = Math.floor(5 * Math.random());
+                let c = Math.floor(4 * Math.random());
+                if (this.itemTimesPressedMatrix[r][c] < 3){
+                  this.promptNum = 4 * (4 - r) + c;
+                  break;
+                }
+              }
+            }
             this.needPrompt = false;
           }
         }
@@ -822,7 +824,7 @@ class Vending_Machine extends Scene_Component
 
 //transparent glass
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.2))), this.materials.glass);
-     
+
       //PLANT
       this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
       this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.4,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
