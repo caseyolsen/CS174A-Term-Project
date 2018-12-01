@@ -168,6 +168,8 @@ class Vending_Machine extends Scene_Component
                        'square': new Square(), 
                        'plant': new Shape_From_File( "/assets/houseplant.obj" ),
                        'chair': new Shape_From_File("/assets/chair.obj"),
+//                        'pot': new Shape_From_File("/assets/pot.obj"),
+                        'leaf': new Shape_From_File("/assets/leaves.obj"),
                        'text': new Text_Line( 2 )}
         this.submit_shapes( context, shapes );
         this.use_mipMap = true;
@@ -177,10 +179,13 @@ class Vending_Machine extends Scene_Component
           glass: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 0.25), { ambient: 0, diffusivity: 1 } ),
           black: context.get_instance( Phong_Shader ).material( Color.of(.1, .1, .1, 1), { ambient: .7, diffusivity: 0 } ),
           white: context.get_instance( Phong_Shader ).material( Color.of(1, 1, 1, 1), { ambient: .8, diffusivity: .3 } ),
+          green: context.get_instance( Fake_Bump_Map ).material( Color.of(58/255, 95/255, 11/255, 1), { ambient: .3, diffusivity: .3 } ),
+
           yellow: context.get_instance( Phong_Shader ).material( Color.of(1, 1, .8, 1), { ambient: .7, diffusivity: .3 } ),
           vending_machine: context.get_instance( Phong_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3 } ),
           vm_shadow: context.get_instance( Shadow_Shader ).material( Color.of(0.5, 0.5, 0.5, 1), { ambient: .7, diffusivity: 0.3, shadow: this.texture } ),
-          chair: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.3, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/bambootexture.jpg")}),
+          chair: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 0, 0, 1), {ambient: 0.3, diffusivity: .3,texture: context.get_instance("assets/bambootexture.jpg")}),
+          plant: context.get_instance( Fake_Bump_Map ).material( Color.of(1, 100/255, 0, 1), {ambient: 0.3, diffusivity: .3, shadow: this.texture}),
 
           cheerios: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheerios.jpg", true ) } ),
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
@@ -208,7 +213,7 @@ class Vending_Machine extends Scene_Component
           cheese: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cheeseit.jpg", true ) } ),
           pop: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/poptarts.jpg", true ) } ),
           walls: context.get_instance( Phong_Shader ).material( Color.of(205.0/255, 235.0/255, 249.0/255, 1), { ambient: .7, diffusivity: 0.3} ),
-          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: .3, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}) 
+          floor: context.get_instance( Shadow_Shader ).material( Color.of(1, 1, 1, 1), {ambient: 0.5, diffusivity: 0, shadow: this.texture, texture: context.get_instance("assets/floor.jpg")}) 
           }
 
 
@@ -811,9 +816,12 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.2))), this.materials.glass);
   
       //PLANT
-      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.5,1.5,1.5))), this.materials.black);
+      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.4,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.6,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+
       //chair
-      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 4))).times(Mat4.scale(Vec.of(2,2,2))), this.materials.chair);
+      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
 
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
