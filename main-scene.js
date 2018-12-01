@@ -400,7 +400,7 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("Shake Forward", ["i"], () => {
         if(this.inProgress)
-          this.fbshake.unshift(1);
+          this.fbshake.unshift(-1);
         if(this.promptNum == 23)
         {
             this.stuck = false;
@@ -409,7 +409,7 @@ class Vending_Machine extends Scene_Component
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
         if(this.inProgress)
-          this.fbshake.unshift(-1);
+          this.fbshake.unshift(1);
         if(this.promptNum == 24)
         {
             this.stuck = false;
@@ -677,11 +677,11 @@ class Vending_Machine extends Scene_Component
       }
       if (this.lrcurrentShake !== 0){
         this.play_sound("shake");
-        if (this.lrshakeTimer === 20){
+        if (this.lrshakeTimer === 10){
           this.lrcurrentShake = 0;
         }
         else {
-          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
+          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/10)/6, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
           this.lrshakeTimer++;
         }
       }
@@ -697,12 +697,12 @@ class Vending_Machine extends Scene_Component
       }
       if (this.fbcurrentShake !== 0){
         this.play_sound("shake");
-        if (this.fbshakeTimer === 20){
+        if (this.fbshakeTimer === 10){
           this.fbcurrentShake = 0;
         }
         else {
           //need to calculate this
-          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/20)/4, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
+          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/10)/6, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
           this.fbshakeTimer++;
         }
       }
@@ -831,12 +831,12 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(-0.85,2.2,5.5))).times(Mat4.scale(Vec.of(2.9,4.5,0.2))), this.materials.glass);
 
       //PLANT
-      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.5,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
-      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.4,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
-      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.6,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+      this.shapes.plant.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-3.2555,3))).times(Mat4.scale(Vec.of(1.4,1.4,1.4))), this.materials.plant);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9,-2.1,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
+      this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.3,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
 
       //chair
-      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -4, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
+      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -3.708, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
 
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
