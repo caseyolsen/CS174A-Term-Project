@@ -191,7 +191,6 @@ class Vending_Machine extends Scene_Component
           frosted: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frosted.jpg", true ) } ),
           pops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/pops.jpg", true ) } ),
           fruitloops: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/fruitloops.jpg", true ) } ),
-          frostedflakes: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/frostedflakes.jpg", true ) } ),
           lucky: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/lucky.jpg", true ) } ),
           cocoapuffs: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/cocoapuffs.jpg", true ) } ),
           trix: context.get_instance( Phong_Shader ).material( Color.of( 0,0,0,1 ), { ambient: 1, texture: context.get_instance( "assets/boxes/trix.jpg", true ) } ),
@@ -222,7 +221,6 @@ class Vending_Machine extends Scene_Component
                   drop: new Audio('assets/sounds/drop.wav'),
                   shake: new Audio('assets/sounds/shake.mp3'),
                   hum: new Audio('assets/sounds/hum.wav'),
-                  sigh: new Audio('assets/sounds/sigh.wav')
               }
 
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
@@ -738,7 +736,10 @@ class Vending_Machine extends Scene_Component
       //Vending machine dimensions are usually 72"H x 39"W x 33"D, 5:1 scale, centered at origin
       //Vending Machine is multiple boxes put together
 
+
       let thiccness = 0.2;
+
+
 
       //back:
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.scale(Vec.of(4, 7, thiccness))), this.materials.vending_machine);
@@ -831,7 +832,8 @@ class Vending_Machine extends Scene_Component
       this.shapes.leaf.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(9.4,-1.3,3))).times(Mat4.scale(Vec.of(1.7,1.7,1.7))), this.materials.green);
 
       //chair
-      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -3.708, 2.5))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
+      this.shapes.chair.draw(graphics_state, model_transform.times(Mat4.translation(Vec.of(-9, -3.708, 4))).times(Mat4.scale(Vec.of(2.5,2.5,2.5))), this.materials.chair);
+
 
       if (this.inProgress)this.gameTimer = (this.gameTimer - dt).toFixed(2);
       if (this.gameTimer <= 0){
@@ -839,6 +841,7 @@ class Vending_Machine extends Scene_Component
         this.gameTimer = 0;
         this.currentPrompt = this.prompts[25];
       }
+
 
     }
   }
