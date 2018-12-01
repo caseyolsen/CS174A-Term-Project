@@ -565,14 +565,14 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
     { this.create( element, scenes, show_controls )      // to 16 Canvas_Widgets; browsers support up to 16 WebGL contexts per page.
 
       const rules = [ ".canvas-widget { width: 1800px; background: white }",
-                      ".canvas-widget * { font-family: monospace; font-size: 20px }",
+                      ".canvas-widget * { font-family: courier new, monospace; font-size: 20px }",
                       ".canvas-widget canvas { width: 1200px; height: 1000px; margin-bottom:-3px; float: left}",
                       ".canvas-widget div { background: white }",
                       ".canvas-widget table { border-collapse: collapse; display:block; overflow-x: auto; }",
                       ".canvas-widget table.control-box { width: 600px; border:0; margin:0; height:1000px; transition:.5s; overflow-y:scroll; background:#EEEEEE; float: left }",
                       ".canvas-widget table.control-box:hover { max-height:1000px }",
                       ".canvas-widget table.control-box td { overflow:hidden; border:0; background:#EEEEEE}",
-                      ".canvas-widget table.control-box td .control-div { background: #EEEEEE; height:1000px; padding: 5px 5px 5px 30px}",
+                      ".canvas-widget table.control-box td .control-div { background: #EEEEEE; padding: 25px 25px 5px 30px}",
                       ".canvas-widget table.control-box td * { background:transparent }",
                       ".canvas-widget table.control-box .control-div td { border-radius:unset }",
                       ".canvas-widget table.control-box .control-title { padding:7px 40px; color:white; background:DarkSlateGray; box-shadow: 25px 0px 70px -15px inset black }",
@@ -584,7 +584,7 @@ class Canvas_Widget                    // Canvas_Widget embeds a WebGL demo onto
                       ".dropdown-content a { color: black; padding: 4px 4px; display: block }",
                       ".dropdown a:hover { background: #f1f1f1 }",
                       ".canvas-widget button { background: #4C9F50; color: white; padding: 6px; border-radius:9px; \
-                                                box-shadow: 4px 6px 16px 0px rgba(0,0,0,0.3); transition: background .3s, transform .3s }",
+                                                box-shadow: 5px 5px 5px 0px rgba(0,0,0,0.1); transition: background .3s, transform .3s; margin: 3px }",
                       ".canvas-widget button:hover, button:focus { transform: scale(1.3); color:gold }",
                       ".link { text-decoration:underline; cursor: pointer }",
                       ".show { transform: scaleY(1); height:200px; overflow:auto }",

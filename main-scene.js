@@ -253,6 +253,7 @@ class Vending_Machine extends Scene_Component
         this.stuckChance = 1;
         this.hasShaken = false;
         this.columnEntered = false;
+        this.stuckItemRotation;
 
         this.lrshakeTimer;
         this.lrshake = [];
@@ -338,7 +339,7 @@ class Vending_Machine extends Scene_Component
 
      make_control_panel(){ //could we remove the other control panel in dependencies.js to limit the user to just our buttons?
       //can modify formatting if necessary
-      this.live_string(box => {box.textContent = "TIME:" + this.gameTimer});
+      this.live_string(box => {box.textContent = "Time: " + this.gameTimer});
       this.new_line();
 
 
@@ -346,7 +347,7 @@ class Vending_Machine extends Scene_Component
       this.new_line();
 
 
-      this.live_string(box => {box.textContent = "SCORE:" + this.score});
+      this.live_string(box => {box.textContent = "Score: " + this.score});
       this.new_line();
 
 
@@ -363,7 +364,7 @@ class Vending_Machine extends Scene_Component
         }else{
           c = '-';
         }
-        box.textContent = "SELECTION:" + r + c;
+        box.textContent = "Selection: " + r + c;
       });
       this.new_line();
 
@@ -397,8 +398,8 @@ class Vending_Machine extends Scene_Component
 
       this.key_triggered_button("Shake Forward", ["i"], () => {
         if(this.inProgress)
-          this.fbshake.unshift(1);
-        if(this.promptNum == 23)
+          this.fbshake.unshift(-1);
+        if(this.promptNum == 24)
         {
             this.stuck = false;
             this.needPrompt = true;
@@ -406,8 +407,8 @@ class Vending_Machine extends Scene_Component
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
         if(this.inProgress)
-          this.fbshake.unshift(-1);
-        if(this.promptNum == 24)
+          this.fbshake.unshift(1);
+        if(this.promptNum == 23)
         {
             this.stuck = false;
             this.needPrompt = true;
@@ -600,7 +601,7 @@ class Vending_Machine extends Scene_Component
             this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.07, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*j+2]);
             if(i!=0)
                   this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.33, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*(5-i)+10]);
-               else //row E
+            else //row E
                   this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.33, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*i]);
 
 
@@ -608,10 +609,14 @@ class Vending_Machine extends Scene_Component
 //             this.shapes.text.set_string( this.labelMatrix[i][j] );
 //             this.shapes.text.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.3, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.125, 0.025))), this.materials.text_image);
 
-                  //vending machine shelves
-                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
-                  //vending machine items
+            //vending machine gates
+            this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.75, 4.5-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.15, 0.025))), this.materials.vending_machine);
+
+            //vending machine items
+            if (!this.stuck || this.itemxPositionMatrix[i][j][k] < 14*(k + 1) || (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75)))
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
+            else
+                  this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))).times(Mat4.rotation(Math.PI / 12, Vec.of(0,0,1))), this.materialsMatrix[i][j]);
             }
         }
       }
@@ -670,11 +675,11 @@ class Vending_Machine extends Scene_Component
       }
       if (this.lrcurrentShake !== 0){
         this.play_sound("shake");
-        if (this.lrshakeTimer === 20){
+        if (this.lrshakeTimer === 10){
           this.lrcurrentShake = 0;
         }
         else {
-          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/20)/4, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
+          vm_transform = Mat4.identity().times(Mat4.translation(Vec.of(-3.9 * this.lrcurrentShake, -7.2, 0))).times(Mat4.rotation(this.lrcurrentShake * Math.sin(Math.PI * this.lrshakeTimer/10)/6, Vec.of(0,0,1))).times(Mat4.translation(Vec.of(3.9 * this.lrcurrentShake, 7.2, 0)));
           this.lrshakeTimer++;
         }
       }
@@ -690,12 +695,12 @@ class Vending_Machine extends Scene_Component
       }
       if (this.fbcurrentShake !== 0){
         this.play_sound("shake");
-        if (this.fbshakeTimer === 20){
+        if (this.fbshakeTimer === 10){
           this.fbcurrentShake = 0;
         }
         else {
           //need to calculate this
-          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/20)/4, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
+          vm_transform = Mat4.translation(Vec.of(0, -7.2, 3.3 * this.fbcurrentShake)).times(Mat4.rotation(this.fbcurrentShake * Math.sin(Math.PI * this.fbshakeTimer/10)/6, Vec.of(1,0,0))).times(Mat4.translation(Vec.of(0, 7.2, -3.3 * this.fbcurrentShake)));
           this.fbshakeTimer++;
         }
       }
