@@ -35,3 +35,13 @@ Our **vending machine game** allows the player to use keystrokes to vend items f
 -I added sounds to the game and implementation for playing sounds, for each action of the player and machine (pressing buttons, shaking the machine, vending, continuous vending when items get stuck, items dropping).
 
 **Kenna Wang**
+
+-I created the room, placing walls, floor, ceiling, light fixture in the scene.
+
+-I created machine shaking feature, animating machine rotation triggered by user input.
+
+-I added buttons on the vending machine, animated them when the user pressed those buttons on the keyboard, used texture mapping on the buttons
+
+-I turned vending machine into a game, creating score, timer, game prompts, and penalties.
+
+-Modified CSS so that the program has scoreboard side by side with the scene. I also changed the appearance of the control panel and its contents.
