@@ -617,7 +617,7 @@ class Vending_Machine extends Scene_Component
             else { //item gets stuck
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.rotation(Math.PI / 12, Vec.of(0,0,1))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
                   this.play_sound("vending");
-            }
+                  }
             
             }
         }
