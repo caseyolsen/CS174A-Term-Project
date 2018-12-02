@@ -6,22 +6,17 @@
 
 Our **vending machine game** allows the player to use keystrokes to vend items from the machine by following randomly generated commands. When an item gets stuck, the player is prompted to shake the vending machine in a specified direction. Items will fall from their slots if the correct item is vended, or the player correctly follows the prompt to shake the machine. There are sounds that are played to correspond to the actions (pressing buttons, vending, etc).
 
-### How to Operate
-
-By pressing key "p" the player can begin the game, triggering the 60 second timer to begin. In the control panel, the player will be prompted to follow randomly generated commands by using keys to vend items. The player follows the commands given to receive points, before the timer runs out. Inputting the wrong keys results in a deduction of time.
-
 ### Advanced Features
 
 **Transparency** - The glass of the vending machines allows the player to view the items behind the glass in order to vend the appropriate items.
 
 **Shadows** - A shadow shader is used to project the shadows of the vending machine onto the items in the room (the chair and the plant), more visibly seen when the vending machine shakes left, right, forward, backwards.
 
-**OBJ model** - OBJ models were loaded to create the chair and plant, on either sides of the vending machine.
+**OBJ model** - 
 
 ### Individual Roles
 
 **Casey Olsen**
-
 -I constructed the vending machine itself using a number of box and square objects
 
 -I added the gates and items into the machine and made the vending motion when the correct buttons were pressed
@@ -57,3 +52,5 @@ By pressing key "p" the player can begin the game, triggering the 60 second time
 -I turned vending machine into a game, creating score, timer, game prompts, and penalties.
 
 -Modified CSS so that the program has scoreboard side by side with the scene. I also changed the appearance of the control panel and its contents.
+
+
