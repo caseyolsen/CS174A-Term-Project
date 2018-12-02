@@ -17,6 +17,13 @@ Our **vending machine game** allows the player to use keystrokes to vend items f
 ### Individual Roles
 
 **Casey Olsen**
+-I constructed the vending machine itself using a number of box and square objects
+
+-I added the gates and items into the machine and made the vending motion when the correct buttons were pressed
+
+-I added in the probability of an item getting stuck and changed the motion of the box when this happens
+
+-I made the boxes get unstuck when the user shakes the machine in the correct direction and then continue their previous motion
 
 **Hannah Park** 
 
@@ -45,3 +52,5 @@ Our **vending machine game** allows the player to use keystrokes to vend items f
 -I turned vending machine into a game, creating score, timer, game prompts, and penalties.
 
 -Modified CSS so that the program has scoreboard side by side with the scene. I also changed the appearance of the control panel and its contents.
+
+
