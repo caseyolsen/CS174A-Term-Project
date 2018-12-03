@@ -8,6 +8,8 @@ Our **vending machine game** allows the player to use keystrokes to vend items f
 
 ### How to Operate
 
+To start the program, run host.command, then in a browser, enter 'localhost:8000'
+
 By pressing key "p" the player can begin the game, triggering the 60 second timer to begin. In the control panel, the player will be prompted to follow randomly generated commands by using keys to vend items. The player follows the commands given to receive points, before the timer runs out. Inputting the wrong keys results in a deduction of time.
 
 ### Advanced Features
