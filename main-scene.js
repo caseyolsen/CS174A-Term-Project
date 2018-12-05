@@ -232,6 +232,7 @@ class Vending_Machine extends Scene_Component
 
         this.row = -1;
         this.column = -1;
+        this.allfall = false;
         this.trackMatrixArray = [];
         this.materialsMatrix = [];
         this.itemxPositionMatrix = [[[0,0,0], [0,0,0], [0,0,0], [0,0,0]],
@@ -506,13 +507,13 @@ class Vending_Machine extends Scene_Component
         }
       });
 
-//       //added feature drop all item
-//       this.new_line();
-//       this.key_triggered_button("CS174A", ["w"], ()=>{
-//         if(this.inProgress || this.gameTimer == 0){
-
-//         }
-//       });
+      //added feature drop all item
+      this.new_line();
+      this.key_triggered_button("CS174A", ["w"], ()=>{
+        if(this.inProgress || this.gameTimer == 0){
+               this.allfall = true;
+        }
+      });
 
       this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();
       this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();
@@ -533,8 +534,51 @@ class Vending_Machine extends Scene_Component
         {
                   // this if statement is where it gets hard
                   // its responsible for moving the lane and having the item fall
-                 if (this.row == i && this.column == j)
+                 if(this.allfall)
                  {
+                    //this.stuckChance = parseInt(Math.random() * 5);
+                    //rewards user if they vend the right item, punishes them otherwise
+                    if (this.promptNum === 4 * (4 - i) + j){
+                      if (!this.vending){
+                      this.score++;
+                    }
+                  }else{
+                      if (!this.vending){
+                        this.promptNum = 20;
+                        this.gameTimer -= 5;
+                      }
+                  }
+                  if (!this.stuck)
+                  {
+                        this.vending = true;
+                        // change front back position
+                        if (this.itemxPositionMatrix[i][j][this.itemTimesPressedMatrix[i][j]] < 14*(this.itemTimesPressedMatrix[i][j] + 1))
+                        {
+                              for (let n = 0; n < 3-this.itemTimesPressedMatrix[i][j]; n++)
+                              {
+                                    this.itemxPositionMatrix[i][j][2-n] += 1;
+                                    this.play_sound("vending");
+                                    this.gatexPositionMatrix[i][j][2-n] += 1;
+                                    if (this.gatexPositionMatrix[i][j][2-n] >= 14)
+                                    {
+                                          this.gatexPositionMatrix[i][j][2-n] = 0;
+                                    }
+                              }
+                        }
+                        else
+                        {
+                              this.itemTimesPressedMatrix[i][j] += 1;
+                              this.row = -1;
+                              this.column = -1;
+                              this.vending = false;
+                              this.needPrompt = true;
+                        }
+                  }
+                       
+                 }
+                 else if (this.row == i && this.column == j)
+                 {
+                    
                     //this.stuckChance = parseInt(Math.random() * 5);
                     //rewards user if they vend the right item, punishes them otherwise
                     if (this.promptNum === 4 * (4 - i) + j){
@@ -602,11 +646,6 @@ class Vending_Machine extends Scene_Component
 
                         }
                   }
-                  //if (this.itemyPositionMatrix[i][j][k] == (4 + i*1.75)-1)
-                  //{
-                  //      this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                  //}
-
 
             //vending machine labels
             this.shapes.square.draw(graphics_state,vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.07, i*1.75-1.75, 4.6-k*1.4+this.gatexPositionMatrix[i][j][k]/10))).times(Mat4.scale(Vec.of(0.15, 0.15, 0.025))), this.buttonTextures[2*j+2]);
