@@ -376,7 +376,7 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("Shake Left", ["j"], () => { //we can come up with better buttons later
-        if(this.inProgress)
+        if(this.inProgress || this.gameTimer == 0)
           this.lrshake.unshift(1);
         if(this.promptNum == 22)
         {
@@ -385,7 +385,7 @@ class Vending_Machine extends Scene_Component
         }
       });
       this.key_triggered_button("Shake Right", ["l"], () => {
-        if(this.inProgress)
+        if(this.inProgress || this.gameTimer == 0)
           this.lrshake.unshift(-1);
         if(this.promptNum == 21)
         {
@@ -397,7 +397,7 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("Shake Forward", ["i"], () => {
-        if(this.inProgress)
+        if(this.inProgress || this.gameTimer == 0)
           this.fbshake.unshift(-1);
         if(this.promptNum == 24)
         {
@@ -406,7 +406,7 @@ class Vending_Machine extends Scene_Component
         }
       });
       this.key_triggered_button("Shake Backwards", ["k"], () => {
-        if(this.inProgress)
+        if(this.inProgress || this.gameTimer == 0)
           this.fbshake.unshift(1);
         if(this.promptNum == 23)
         {
@@ -419,14 +419,14 @@ class Vending_Machine extends Scene_Component
 
       //pressing buttons on the vending machine
       this.key_triggered_button("A", ["a"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(6);
           this.row = 4;
           this.play_sound("button");
         }
       });
       this.key_triggered_button("1", ["1"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(1);
           this.column = 0;
           this.play_sound("button");
@@ -437,14 +437,14 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("B", ["b"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(7);
           this.row = 3;
           this.play_sound("button");
         }
       });
       this.key_triggered_button("2", ["2"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(2);
           this.column = 1;
           this.play_sound("button");
@@ -455,14 +455,14 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("C", ["c"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(8);
           this.row = 2;
           this.play_sound("button");
         }
       });
       this.key_triggered_button("3", ["3"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(3);
           this.column = 2;
           this.play_sound("button");
@@ -473,14 +473,14 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("D", ["d"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(9);
           this.row = 1;
           this.play_sound("button");
         }
       });
       this.key_triggered_button("4", ["4"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(4);
           this.column = 3;
           this.play_sound("button");
@@ -491,23 +491,35 @@ class Vending_Machine extends Scene_Component
 
 
       this.key_triggered_button("E", ["e"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(0);
           this.row = 0;
           this.play_sound("button");
         }
       });
       this.key_triggered_button("5", ["5"], ()=>{
-        if(this.inProgress){
+        if(this.inProgress || this.gameTimer == 0){
           this.press.unshift(5);
           this.column = 4;
           this.play_sound("button");
           this.stuck_helper();
         }
       });
-      this.new_line();
-      this.new_line();
-      //shadow image
+
+//       //added feature drop all item
+//       this.new_line();
+//       this.key_triggered_button("CS174A", ["w"], ()=>{
+//         if(this.inProgress || this.gameTimer == 0){
+
+//         }
+//       });
+
+      this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();
+      this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();
+      this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();this.new_line();
+
+
+//       //shadow image
       this.result_img = this.control_panel.appendChild( Object.assign( document.createElement( "img" ),
                 { style:"width:200px; height:" + 200 * this.aspect_ratio + "px" } ) );
     }
@@ -736,6 +748,7 @@ class Vending_Machine extends Scene_Component
       this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(0,1,25))).times(Mat4.scale(Vec.of(4,3,0))), this.materials.vending_machine);
       this.scratchpad_context.drawImage( this.webgl_manager.canvas, 0, 0, 256, 256 );
       this.texture.image.src = this.result_img.src = this.scratchpad.toDataURL("image/png");
+
 								// Clear the canvas and start over, beginning scene 2:
       this.webgl_manager.gl.clear( this.webgl_manager.gl.COLOR_BUFFER_BIT | this.webgl_manager.gl.DEPTH_BUFFER_BIT);
 
