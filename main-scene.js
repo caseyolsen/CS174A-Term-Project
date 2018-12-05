@@ -221,6 +221,8 @@ class Vending_Machine extends Scene_Component
                   drop: new Audio('assets/sounds/drop.wav'),
                   shake: new Audio('assets/sounds/shake.mp3'),
                   hum: new Audio('assets/sounds/hum.wav'),
+                  sigh: new Audio('assets/sounds/sigh.wav'),
+                  allfall: new Audio('assets/sounds/allfall.mp3')
               }
 
         this.lights = [ new Light( Vec.of(0,10,6,1), Color.of( 1, 1, 1, 1 ), 100000 ) ];
@@ -325,7 +327,8 @@ class Vending_Machine extends Scene_Component
 
    //helper function to implement sound
   play_sound( name, volume = 1 )
-    { if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
+    { 
+    if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
       this.sounds[ name ].currentTime = 0;
       this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
       this.sounds[ name ].play();
@@ -512,6 +515,7 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("CS174A", ["w"], ()=>{
         if(this.inProgress || this.gameTimer == 0){
                this.allfall = true;
+               this.play_sound("allfall");
         }
       });
 
@@ -634,12 +638,14 @@ class Vending_Machine extends Scene_Component
                                     if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
                                     {
                                           this.play_sound("drop"); //need to fix this so the drop sound isn't too early
+                                     
                                     }
                               }
                               else
                               {
                                     this.stuck = true;
                                     //this.promptNum = 21;
+                                    this.play_sound("sigh");
                                     this.stuckChance = 0;
                                     this.needPrompt = true;
                               }
@@ -674,6 +680,7 @@ class Vending_Machine extends Scene_Component
         }
       }
       //this.scorekeeper.score +=1;
+
     }
 
     stuck_helper()
