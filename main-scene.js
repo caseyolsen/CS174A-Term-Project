@@ -327,7 +327,7 @@ class Vending_Machine extends Scene_Component
 
    //helper function to implement sound
   play_sound( name, volume = 1 )
-    { 
+    {
     if( 0 < this.sounds[ name ].currentTime && this.sounds[ name ].currentTime < .3 ) return;
       this.sounds[ name ].currentTime = 0;
       this.sounds[ name ].volume = Math.min(Math.max(volume, 0), 1);;
@@ -512,7 +512,7 @@ class Vending_Machine extends Scene_Component
 
       //added feature drop all item
       this.new_line();
-      this.key_triggered_button("CS174A", ["w"], ()=>{
+      this.key_triggered_button("CS174A", ["/"], ()=>{
         if(this.inProgress || this.gameTimer == 0){
                this.allfall = true;
                this.play_sound("allfall");
@@ -578,11 +578,11 @@ class Vending_Machine extends Scene_Component
                               this.needPrompt = true;
                         }
                   }
-                       
+
                  }
                  else if (this.row == i && this.column == j)
                  {
-                    
+
                     //this.stuckChance = parseInt(Math.random() * 5);
                     //rewards user if they vend the right item, punishes them otherwise
                     if (this.promptNum === 4 * (4 - i) + j){
@@ -630,7 +630,7 @@ class Vending_Machine extends Scene_Component
                   {
                         if (this.itemxPositionMatrix[i][j][k] >= 14*(k + 1) && this.itemyPositionMatrix[i][j][k] < (4 + i*1.75))
                         {
-                              if (this.stuckChance != 3)
+                              if (this.stuckChance != 3 && this.stuckChance != 2)
                               {
                                     this.itemyPositionMatrix[i][j][k] += 1/20;
                                     this.itemyPositionMatrix[i][j][k] *= 1.1;
@@ -638,7 +638,7 @@ class Vending_Machine extends Scene_Component
                                     if (this.itemyPositionMatrix[i][j][k] >= (4 + i*1.75))
                                     {
                                           this.play_sound("drop"); //need to fix this so the drop sound isn't too early
-                                     
+
                                     }
                               }
                               else
@@ -675,7 +675,7 @@ class Vending_Machine extends Scene_Component
                   this.shapes.box.draw(graphics_state, vm_transform.times(Mat4.translation(Vec.of(j*1.5-3.2, i*1.75-1.25-this.itemyPositionMatrix[i][j][k], 3.4-k*1.4+this.itemxPositionMatrix[i][j][k]/10))).times(Mat4.rotation(Math.PI / 12, Vec.of(0,0,1))).times(Mat4.scale(Vec.of(0.5, 0.7, 0.25))), this.materialsMatrix[i][j]);
                   this.play_sound("vending");
                   }
-            
+
             }
         }
       }
@@ -779,11 +779,11 @@ class Vending_Machine extends Scene_Component
           this.currentPress = -1;
         }
         else if (this.pressTimer < 10){
-          this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,-.1)));
+          this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,-.05)));
           this.pressTimer++;
         }
         else {
-          this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,.1)));
+          this.buttonTransformations[this.currentPress] = this.buttonTransformations[this.currentPress].times(Mat4.translation(Vec.of(0,0,.05)));
           this.pressTimer++;
         }
       }
