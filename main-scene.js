@@ -515,7 +515,7 @@ class Vending_Machine extends Scene_Component
       this.key_triggered_button("CS174A", ["w"], ()=>{
         if(this.inProgress || this.gameTimer == 0){
                this.allfall = true;
-               this.play_sound("allfall");
+               this.sounds["allfall"].play();
         }
       });
 
